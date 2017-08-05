@@ -12,3 +12,7 @@ clean:
 
 ngp: ./src/*.c
 	gcc $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+
+ngp_perf: ./src/*.c
+	gcc $(CFLAGS) -D_PERFORMANCE_TEST $^ -o $@ $(LDFLAGS)

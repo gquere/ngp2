@@ -34,11 +34,18 @@ int main(int argc, char *argv[])
     pthread_t search_thread;
     pthread_create(&search_thread, NULL, search_thread_start, (void *) search);
 
-#if 1
+#ifndef _PERFORMANCE_TEST
     display_loop(search, entries);
 #endif
 
     pthread_join(search_thread, NULL);
+
+#ifdef _PERFORMANCE_TEST
+    uint32_t nb_lines = entries_get_nb_lines(entries);
+    uint32_t nb_files = entries_get_nb_entries(entries) - nb_lines;
+    printf("Found %d files, %d lines\n", nb_files, nb_lines);
+#endif
+
     entries_delete(entries);
     search_delete(search);
     config_delete(config);
