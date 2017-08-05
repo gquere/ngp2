@@ -35,7 +35,9 @@ int main(int argc, char *argv[])
     pthread_create(&search_thread, NULL, search_thread_start, (void *) search);
 
 #ifndef _PERFORMANCE_TEST
-    display_loop(search, entries);
+    struct display *display = display_new();
+    display_loop(display, search, entries);
+    display_delete(display);
 #endif
 
     pthread_join(search_thread, NULL);
