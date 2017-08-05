@@ -1,5 +1,5 @@
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#ifndef NGP_CONFIG_H
+#define NGP_CONFIG_H
 
 #include <stdint.h>
 
@@ -21,4 +21,4 @@ struct config {
 struct config * config_new(int argc, char *argv[]);
 void config_delete(struct config *this);
 
-#endif /* _CONFIG_H */
+#endif /* NGP_CONFIG_H */

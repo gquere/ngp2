@@ -1,5 +1,5 @@
-#ifndef _SEARCH_H
-#define _SEARCH_H
+#ifndef NGP_SEARCH_H
+#define NGP_SEARCH_H
 
 #include "entries.h"
 #include "config.h"
@@ -19,4 +19,4 @@ struct search * search_new(const char *directory, const char *pattern,
                            struct entries *entries, struct config *config);
 void search_delete(struct search *this);
 
-#endif /* _SEARCH_H */
+#endif /* NGP_SEARCH_H */

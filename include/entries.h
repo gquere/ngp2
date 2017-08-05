@@ -1,5 +1,5 @@
-#ifndef _ENTRIES_H
-#define _ENTRIES_H
+#ifndef NGP_ENTRIES_H
+#define NGP_ENTRIES_H
 
 #include <stdint.h>
 
@@ -32,4 +32,4 @@ void entries_add(struct entries *this, const uint32_t line, const char *data);
 struct entries * entries_new(void);
 void entries_delete(struct entries *this);
 
-#endif /* _ENTRIES_H */
+#endif /* NGP_ENTRIES_H */
