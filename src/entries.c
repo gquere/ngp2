@@ -87,8 +87,8 @@ struct entries * entries_new(void)
 {
     struct entries *this = calloc(1, sizeof(struct entries));
 
-    this->entries = malloc(sizeof(struct entry));
-    this->size = 1;
+    this->entries = calloc(500, sizeof(struct entry));
+    this->size = 500;
 
     return this;
 }
