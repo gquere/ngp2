@@ -17,7 +17,8 @@
 
 
 struct search {
-    uint8_t status;
+    uint8_t status:1;
+    uint8_t case_insensitive:1;
 
     /* search parameters */
     char *directory;
@@ -47,7 +48,7 @@ static uint8_t is_dir_special(const char *directory_name)
 }
 
 
-/* REGEX **********************************************************************/
+/* SEARCH ALGORITHMS **********************************************************/
 static char * normal_search(const char *line, const char *pattern, int size)
 {
     (void) size;
@@ -204,6 +205,7 @@ struct search * search_new(const char *directory, const char *pattern,
     this->directory = strdup(directory);
     this->pattern = strdup(pattern);
     this->entries = entries;
+    this->case_insensitive = config->insensitive_search;
 
     if (config->insensitive_search) {
         this->parser = insensitive_search;
