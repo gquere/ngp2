@@ -46,7 +46,11 @@ struct config * config_new(int argc, char *argv[])
 {
     struct config *this = calloc(1, sizeof(struct config));
 
-    parse_config(this, argc, argv);
+    if (parse_config(this, argc, argv) == EXIT_FAILURE) {
+        printf("Failed parsing config\n");
+        free(this);
+        return NULL;
+    }
 
     return this;
 }
