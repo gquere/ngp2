@@ -86,7 +86,7 @@ static void print_line_contents(const uint32_t y_position, uint32_t line, char *
 
     /* line data */
     attron(COLOR_PAIR(normal));
-    mvprintw(y_position, line_str_len, "%s:", data);
+    mvprintw(y_position, line_str_len, "%s", data);
 }
 
 static void print_line(struct display *this,
