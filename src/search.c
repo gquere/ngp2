@@ -8,12 +8,12 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #include <sys/mman.h>
 
 #include "entries.h"
 #include "config.h"
+#include "file_utils.h"
 
 
 struct search {
@@ -28,24 +28,6 @@ struct search {
     /* storage */
     struct entries *entries;
 };
-
-
-/* FILE UTILS *****************************************************************/
-static uint8_t is_file(const char *path)
-{
-    struct stat buf;
-
-    stat(path, &buf);
-    return !S_ISDIR(buf.st_mode);
-}
-
-static uint8_t is_dir_special(const char *directory_name)
-{
-    return !(strcmp(directory_name, ".") &&
-             strcmp(directory_name, "..") &&
-             strcmp(directory_name, ".git") &&
-             strcmp(directory_name, ".svn"));
-}
 
 
 /* SEARCH ALGORITHMS **********************************************************/
@@ -154,7 +136,7 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
         char dir_entry_path[PATH_MAX];
         snprintf(dir_entry_path, PATH_MAX, "%s/%s", directory, dir_entry->d_name);
 
-        if (dir_entry->d_type&DT_DIR && !is_dir_special(dir_entry->d_name)) {
+        if (dir_entry->d_type&DT_DIR && !file_utils_is_dir_special(dir_entry->d_name)) {
             lookup_directory(this, dir_entry_path);
         } else {
             lookup_file(this, dir_entry_path);
@@ -184,9 +166,9 @@ void * search_thread_start(void *context)
 {
     struct search *this = context;
 
-    if (is_file(this->directory)) {
+    if (file_utils_is_file(this->directory)) {
         lookup_file(this, this->directory);
-    } else {
+    } else if (file_utils_is_dir(this->directory)) {
         lookup_directory(this, this->directory);
     }
 
