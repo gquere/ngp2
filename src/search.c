@@ -47,11 +47,13 @@ static char * insensitive_search(const char *line, const char *pattern, int size
 
 
 /* FILE PARSING ***************************************************************/
-static void parse_file_contents(struct search *this, const char *file, char *p)
+static void parse_file_contents(struct search *this, const char *file, char *p,
+                                const size_t p_len)
 {
     char *endline;
     uint8_t first = 1;
     uint32_t line_number = 1;
+    char *orig_p = p;
 
     while ((endline = strchr(p, '\n'))) {
 
@@ -70,6 +72,20 @@ static void parse_file_contents(struct search *this, const char *file, char *p)
 
         p = endline + 1;
         line_number++;
+    }
+
+    /* special case of not newline terminated file */
+    if (endline == NULL && p < orig_p + p_len) {
+        if (this->parser(p, this->pattern, endline - p) != NULL) {
+
+            if (first) {
+                /* add file */
+                entries_add(this->entries, 0, file);
+                first = 0;
+            }
+
+            entries_add(this->entries, line_number, p);
+        }
     }
 }
 
@@ -102,7 +118,7 @@ static uint8_t lookup_file(struct search *this, const char *file)
     }
 
     char *pp = p;
-    parse_file_contents(this, file, p);
+    parse_file_contents(this, file, p, sb.st_size);
 
     if (munmap(pp, sb.st_size) < 0) {
         //printf("Failed unmapping file %s\n", file);
