@@ -40,7 +40,7 @@ struct search {
 extern struct search *current_search;
 
 
-/* SEARCH ALGORITHMS **********************************************************/
+/* NORMAL SEARCH ALGORITHMS ***************************************************/
 static char * normal_search(const char *line, const char *pattern, int size)
 {
     (void) size;
@@ -54,6 +54,119 @@ static char * insensitive_search(const char *line, const char *pattern, int size
 
     return strcasestr(line, pattern);
 }
+
+
+/* RABIN-KARP STRING SEARCH ***************************************************/
+/**
+ * Rolling hash function used for this instance of Rabin-Karp
+ */
+#define REHASH(a,b,h) ((((h) - (a) * d) << 1) + b)
+
+int d, hp; // Rabin-Karp parameters
+int psize; // pattern size used by RK
+
+
+/**
+ * Compute Rabin-Karp parameters (shift d and hash(pattern))
+ *
+ * @param pattern   search pattern
+ */
+static void pre_rabin_karp(const char *pattern)
+{
+    int i;
+
+    psize = strlen(pattern);
+
+    /* compute shift */
+    d = 1 << (psize - 1);
+
+    /* compute hash(pattern) */
+    for (hp = i = 0; i < psize; i++)
+        hp = (hp << 1) + pattern[i];
+}
+
+/**
+ * Rabin-Karp algorithm: use a rolling hash over the text to fasten
+ * the comparison computation
+ *
+ * @param text      Haystack
+ * @param pattern   Needle
+ * @return          pointer to match or NULL
+ */
+static inline char * rabin_karp(const char *text, const char *pattern, int text_size)
+{
+    int ht;
+    int i;
+
+    /* compute hash(text) at position 0 */
+    for (ht = i = 0; i < psize; i++)
+        ht = (ht << 1) + text[i];
+
+    for (i = 0; i <= text_size - psize; i++) {
+        if (ht == hp) /* got a hash match, but it could be a collision */
+            if (!memcmp(pattern, text + i, psize))
+                return (char *) text + i;
+        /* compute rolling hash for next position */
+        ht = REHASH(text[i], text[i + psize], ht);
+    }
+
+    return NULL;
+}
+
+
+/* BOYER-MOORE-HORSPOOL *******************************************************/
+#define ASCII_ALPHABET  256
+unsigned long int skipt[ASCII_ALPHABET];
+int psize = 0;
+static void pre_bmh(const char *pattern)
+{
+
+    psize = strlen(pattern);
+//  if (psize == 1) {
+//      mainsearch->parser = strstr_wrapper;
+//  }
+
+    int i;
+    for (i = 0; i < ASCII_ALPHABET; i++)
+        skipt[i] = psize;
+
+    for (i = 0; i < psize - 1; i++) {
+        /*
+        if ((int) pattern[i] < 0) {
+            pre_rabin_karp(pattern);
+            mainsearch->parser = rabin_karp;
+            return;
+        }
+        */
+
+        skipt[(int) pattern[i]] = psize - i - 1;
+    }
+}
+
+/**
+ * Tuned Boyer-Moore-Horspool algorithm:
+ * - Checks last, first character of pattern
+ * - skips if unicode text
+ */
+static inline char * bmh(const char *text, const char *pattern, int tsize)
+{
+    int i;
+
+    i = 0;
+    while (i <= tsize - psize) {
+        if (text[i + psize - 1] == pattern[psize - 1] && text[i] == pattern[0])
+            if (!memcmp(text + i + 1, pattern + 1, psize - 2))
+                return (char *) text + i;
+        if (text[i + psize - 1] > 0)
+            i += skipt[(int) text[i + psize - 1]];
+        else
+            while (text[i + psize - 1] < 0) //unicode
+                i += psize;
+    }
+
+    return NULL;
+}
+
 
 /* REGEX SEARCH ***************************************************************/
 static uint8_t is_regex_valid(struct search *this)
@@ -287,6 +400,14 @@ struct search * search_new(const char *directory, const char *pattern,
         }
     } else {
         this->parser = normal_search;
+#ifdef _BMH
+        pre_bmh(this->pattern);
+        this->parser = bmh;
+#endif /* _BMH */
+#ifdef _RK
+        pre_rabin_karp(this->pattern);
+        this->parser = rabin_karp;
+#endif /* _RK */
     }
 
     return this;

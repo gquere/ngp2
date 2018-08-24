@@ -1,8 +1,10 @@
 CC = clang
 
 # FLAGS ########################################################################
-CFLAGS = -I./include/ -Wall -Wextra -Wpedantic -O3 -ggdb3
+CFLAGS = -I./include/ -Wall -Wextra -Wpedantic -Wno-unused-function -O3
+CFLAGS += -D_RK
 LDFLAGS = -lpthread -lncurses
+
 
 # TARGETS ######################################################################
 all: build
