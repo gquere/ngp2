@@ -38,9 +38,9 @@ int main(int argc, char *argv[])
     struct display *display = display_new();
     display_loop(display, search, entries);
     display_delete(display);
+    search_stop(search);
 #endif
 
-    search_stop(search);
     pthread_join(search_thread, NULL);
 
 #ifdef _PERFORMANCE_TEST
