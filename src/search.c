@@ -11,6 +11,8 @@
 
 #include <sys/mman.h>
 
+#include <regex.h>
+
 #include "entries.h"
 #include "config.h"
 #include "file_utils.h"
@@ -21,6 +23,7 @@ struct search {
     uint8_t stop:1;
     uint8_t case_insensitive:1;
     uint8_t raw_search:1;
+    uint8_t regex_search:1;
     uint8_t follow_symlinks:1;
 
     /* search parameters */
@@ -28,10 +31,13 @@ struct search {
     char *pattern;
     char * (*parser)(const char *, const char *, int);
     char *file_types;
+    regex_t *regex;
 
     /* storage */
     struct entries *entries;
 };
+
+extern struct search *current_search;
 
 
 /* SEARCH ALGORITHMS **********************************************************/
@@ -47,6 +53,34 @@ static char * insensitive_search(const char *line, const char *pattern, int size
     (void) size;
 
     return strcasestr(line, pattern);
+}
+
+/* REGEX SEARCH ***************************************************************/
+static uint8_t is_regex_valid(struct search *this)
+{
+    regex_t *reg = calloc(1, sizeof(regex_t));
+    if (regcomp(reg, this->pattern, 0)) {
+        free(reg);
+        return 0;
+    } else {
+        this->regex = reg;
+    }
+
+    return 1;
+}
+
+static char * regex_search(const char *line, const char *pattern, int size)
+{
+    (void) size;
+    (void) pattern;
+
+    int ret = regexec(current_search->regex, line, 0, NULL, 0);
+
+    if (ret != REG_NOMATCH) {
+        return "1";
+    } else {
+        return NULL;
+    }
 }
 
 
@@ -234,11 +268,23 @@ struct search * search_new(const char *directory, const char *pattern,
     this->entries = entries;
     this->case_insensitive = config->insensitive_search;
     this->raw_search = config->raw_search;
+    this->regex_search = config->regex_search;
     this->file_types = config->file_types;
     this->follow_symlinks = config->follow_symlinks;
 
     if (config->insensitive_search) {
         this->parser = insensitive_search;
+    } else if (config->regex_search) {
+        if (is_regex_valid(this)) {
+            this->parser = regex_search;
+        } else {
+            printf("Failed validating regex\n");
+            free(this->regex);
+            free(this->pattern);
+            free(this->directory);
+            free(this);
+            return NULL;
+        }
     } else {
         this->parser = normal_search;
     }
@@ -248,6 +294,7 @@ struct search * search_new(const char *directory, const char *pattern,
 
 void search_delete(struct search *this)
 {
+    free(this->regex);
     free(this->pattern);
     free(this->directory);
     free(this);

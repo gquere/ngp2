@@ -9,6 +9,9 @@
 #include "display.h"
 
 
+struct search *current_search = NULL;
+
+
 /* USAGE **********************************************************************/
 static void usage(void)
 {
@@ -37,6 +40,10 @@ int main(int argc, char *argv[])
 
     struct entries *entries = entries_new();
     struct search *search = search_new(config->directory, config->pattern, entries, config);
+    if (search == NULL) {
+        return EXIT_FAILURE;
+    }
+    current_search = search;
 
     pthread_t search_thread;
     pthread_create(&search_thread, NULL, search_thread_start, (void *) search);
