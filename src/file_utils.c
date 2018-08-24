@@ -40,6 +40,17 @@ uint8_t file_utils_is_dir(const char *path)
     return S_ISDIR(buf.st_mode);
 }
 
+uint8_t file_utils_is_symlink(const char *path)
+{
+    struct stat filestat;
+
+    if (lstat(path, &filestat) == -1) {
+        return 0;
+    }
+
+    return S_ISLNK(filestat.st_mode);
+}
+
 /**
  * Checks if a file is in the list of extensions
  * Returns 1 if it is, 0 if it isn't.

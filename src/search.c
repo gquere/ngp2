@@ -161,6 +161,11 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
         char dir_entry_path[PATH_MAX];
         snprintf(dir_entry_path, PATH_MAX, "%s/%s", directory, dir_entry->d_name);
 
+        /* default : ignore symlinks */
+        if (file_utils_is_symlink(dir_entry_path)) {
+            continue;
+        }
+
         if (!(dir_entry->d_type&DT_DIR)) {
             lookup_file(this, dir_entry_path);
         } else if (!file_utils_is_dir_special(dir_entry->d_name)) {
