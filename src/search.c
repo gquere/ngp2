@@ -114,7 +114,7 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
 
     /* special case of not newline terminated file */
     if (endline == NULL && p < orig_p + p_len) {
-        if (this->parser(p, this->pattern, endline - p) != NULL) {
+        if (this->parser(p, this->pattern, orig_p + p_len - p) != NULL) {
 
             if (first) {
                 /* add file */
