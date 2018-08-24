@@ -21,6 +21,7 @@ struct search {
     uint8_t stop:1;
     uint8_t case_insensitive:1;
     uint8_t raw_search:1;
+    uint8_t follow_symlinks:1;
 
     /* search parameters */
     char *directory;
@@ -162,7 +163,7 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
         snprintf(dir_entry_path, PATH_MAX, "%s/%s", directory, dir_entry->d_name);
 
         /* default : ignore symlinks */
-        if (file_utils_is_symlink(dir_entry_path)) {
+        if (!this->follow_symlinks && file_utils_is_symlink(dir_entry_path)) {
             continue;
         }
 
@@ -203,6 +204,10 @@ void * search_thread_start(void *context)
 {
     struct search *this = context;
 
+    if (!this->follow_symlinks && file_utils_is_symlink(this->directory)) {
+        return NULL;
+    }
+
     if (file_utils_is_file(this->directory)) {
         lookup_file(this, this->directory);
     } else if (file_utils_is_dir(this->directory)) {
@@ -227,6 +232,7 @@ struct search * search_new(const char *directory, const char *pattern,
     this->case_insensitive = config->insensitive_search;
     this->raw_search = config->raw_search;
     this->file_types = config->file_types;
+    this->follow_symlinks = config->follow_symlinks;
 
     if (config->insensitive_search) {
         this->parser = insensitive_search;

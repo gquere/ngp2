@@ -1,0 +1,1 @@
+normal_file.c

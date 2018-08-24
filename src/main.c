@@ -17,6 +17,7 @@ static void usage(void)
     printf(" -i : case insensitive search\n");
     printf(" -e : regex search\n");
     printf(" -r : raw search, ignores extensions restrictions\n");
+    printf(" -f : follow symlinks\n");
 }
 
 
