@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -28,6 +29,8 @@ struct display {
     uint32_t index;     // position of first entry to display in entries (0->nb_entries by increment of LINES)
     int32_t cursor;     // position of cursor on screen (0->LINES)
 };
+
+extern struct search *current_search;
 
 
 /* NCURSES ENVIRONMENT ********************************************************/
@@ -87,6 +90,17 @@ static void print_line_contents(const uint32_t y_position, uint32_t line, char *
     /* line data */
     attron(COLOR_PAIR(normal));
     mvprintw(y_position, line_str_len, "%s", data);
+
+    /* color patterns */
+    char *pattern_position = NULL;
+    char *pattern = search_get_pattern(current_search);
+//    while ((pattern_position = strstr(data, pattern)) != NULL) { //TODO: why?
+    pattern_position = strcasestr(data, pattern); {
+        attron(COLOR_PAIR(red));
+        mvprintw(y_position, line_str_len + pattern_position - data, "%s", pattern);
+        attron(COLOR_PAIR(normal));
+        data += (pattern_position - data);
+    }
 }
 
 static void print_line(struct display *this,
