@@ -265,6 +265,11 @@ void display_loop(struct display *this, const struct search *search, const struc
         refresh();
         display_entries(this, entries);
         display_status(search, entries);
+
+        /* check if search thread has ended without results */
+        if (!search_get_status(search) && entries->nb_entries == 0) {
+            run = 0;
+        }
     }
 
     ncurses_stop();
