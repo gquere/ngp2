@@ -15,6 +15,10 @@ char * entries_find_file(const struct entries *this, const uint32_t index)
 {
     uint32_t i = index;
 
+    if (i == 0) {
+        return NULL;
+    }
+
     while (this->entries[--i].line != 0) {
     }
 
