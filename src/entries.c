@@ -2,13 +2,18 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <pthread.h>    //mutex
+
 #include "entries.h"
 
 
-/* GET ************************************************************************/
+/* GETTERS ********************************************************************/
 uint8_t entries_is_file(const struct entries *this, const uint32_t index)
 {
-    return !this->entries[index].line;
+    pthread_mutex_lock(&entries_mutex);
+    uint8_t is_file = !this->entries[index].line;
+    pthread_mutex_unlock(&entries_mutex);
+    return is_file;
 }
 
 char * entries_find_file(const struct entries *this, const uint32_t index)
@@ -19,35 +24,57 @@ char * entries_find_file(const struct entries *this, const uint32_t index)
         return NULL;
     }
 
-    while (this->entries[--i].line != 0) {
-    }
+    pthread_mutex_lock(&entries_mutex);
+    while (this->entries[--i].line != 0) {}
+    char *filename = this->entries[i].data;
+    pthread_mutex_unlock(&entries_mutex);
 
-    return this->entries[i].data;
+    return filename;
 }
 
 uint32_t entries_get_line(const struct entries *this, const uint32_t index)
 {
-    return this->entries[index].line;
+    pthread_mutex_lock(&entries_mutex);
+    uint32_t entry_line = this->entries[index].line;
+    pthread_mutex_unlock(&entries_mutex);
+
+    return entry_line;
 }
 
 char * entries_get_data(const struct entries *this, const uint32_t index)
 {
-    return this->entries[index].data;
+    pthread_mutex_lock(&entries_mutex);
+    char *entry_data = this->entries[index].data;
+    pthread_mutex_unlock(&entries_mutex);
+
+    return entry_data;
 }
 
 uint32_t entries_get_nb_lines(const struct entries *this)
 {
-    return this->nb_lines;
+    pthread_mutex_lock(&entries_mutex);
+    uint32_t nb_lines = this->nb_lines;
+    pthread_mutex_unlock(&entries_mutex);
+
+    return nb_lines;
 }
 
 uint32_t entries_get_nb_entries(const struct entries *this)
 {
-    return this->nb_entries;
+    pthread_mutex_lock(&entries_mutex);
+    uint32_t nb_entries = this->nb_entries;
+    pthread_mutex_unlock(&entries_mutex);
+
+    return nb_entries;
 }
 
 struct entry * entries_get_entry(const struct entries *this, const uint32_t index)
 {
-    return &this->entries[index];
+    pthread_mutex_lock(&entries_mutex);
+    struct entry *entry = &this->entries[index];
+    pthread_mutex_unlock(&entries_mutex);
+
+    return entry;
 }
 
 
@@ -58,10 +85,14 @@ static void check_alloc(struct entries *this)
         return;
     }
 
+    pthread_mutex_lock(&entries_mutex);
     void *tmp = realloc(this->entries, (this->size + 500) * sizeof(struct entry));
     if (tmp != NULL) {
         this->entries = tmp;
+    } else {
+        exit(-1);
     }
+    pthread_mutex_unlock(&entries_mutex);
 
     this->size += 500;
 }

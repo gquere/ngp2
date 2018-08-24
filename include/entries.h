@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#include <pthread.h>
+
+
 struct entry {
     uint32_t line;          /* line = 0 is a file */
     char *data;             /* data to hold : file name or line contents */
@@ -14,6 +17,9 @@ struct entries {
     uint32_t nb_lines;      /* number of lines in the entries (rest are files) */
     uint32_t size;          /* actual number of entries to hold */
 };
+
+
+pthread_mutex_t entries_mutex;  /* mutex on entries because they are realloced */
 
 
 /* GET ************************************************************************/
