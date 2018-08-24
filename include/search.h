@@ -7,6 +7,9 @@
 struct search;
 
 
+/* API ************************************************************************/
+void search_stop(struct search *this);
+
 /* GET ************************************************************************/
 char * search_get_pattern(const struct search *this);
 uint8_t search_get_status(const struct search *this);

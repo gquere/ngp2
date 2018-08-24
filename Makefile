@@ -19,7 +19,7 @@ ngp: ./src/*.c
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 ngp_perf: ./src/*.c
-	gcc $(CFLAGS) -D_PERFORMANCE_TEST $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) -D_PERFORMANCE_TEST $^ -o $@ $(LDFLAGS)
 
 perf: ngp_perf
 

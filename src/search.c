@@ -18,6 +18,7 @@
 
 struct search {
     uint8_t status:1;
+    uint8_t stop:1;
     uint8_t case_insensitive:1;
     uint8_t raw_search:1;
 
@@ -150,7 +151,7 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
         return EXIT_FAILURE;
     }
 
-    while (1) {
+    while (!this->stop) {
         struct dirent *dir_entry = readdir(dir_stream);
 
         if (dir_entry == NULL) {
@@ -170,6 +171,13 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
     closedir(dir_stream);
 
     return EXIT_SUCCESS;
+}
+
+
+/* API ************************************************************************/
+void search_stop(struct search *this)
+{
+    this->stop = 1;
 }
 
 

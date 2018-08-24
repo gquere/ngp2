@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     display_delete(display);
 #endif
 
+    search_stop(search);
     pthread_join(search_thread, NULL);
 
 #ifdef _PERFORMANCE_TEST
