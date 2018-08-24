@@ -10,6 +10,7 @@ struct config {
     char *directory;
 
     /* search file types */
+    char *file_types;
 
     /* search parser type */
     uint8_t insensitive_search:1;

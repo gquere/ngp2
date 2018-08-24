@@ -24,6 +24,7 @@ struct search {
     char *directory;
     char *pattern;
     char * (*parser)(const char *, const char *, int);
+    char *file_types;
 
     /* storage */
     struct entries *entries;
@@ -91,6 +92,11 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
 
 static uint8_t lookup_file(struct search *this, const char *file)
 {
+    /* check file extension */
+    if (!file_utils_check_extension(file, this->file_types)) {
+        return EXIT_FAILURE;
+    }
+
     int f = open(file, O_RDONLY);
     if (f == -1) {
         //printf("Failed opening file %s\n", file);
@@ -204,6 +210,7 @@ struct search * search_new(const char *directory, const char *pattern,
     this->pattern = strdup(pattern);
     this->entries = entries;
     this->case_insensitive = config->insensitive_search;
+    this->file_types = config->file_types;
 
     if (config->insensitive_search) {
         this->parser = insensitive_search;

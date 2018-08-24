@@ -8,7 +8,17 @@
 
 
 /* PARSING ********************************************************************/
-static uint8_t parse_config(struct config *this, int argc, char *argv[])
+static uint8_t parse_config(struct config *this)
+{
+    char *extensions = ".c .h .cpp .py .S .pl .sh .php";    //TODO: get this from config file
+
+    this->file_types = strdup(extensions);
+
+    return EXIT_SUCCESS;
+}
+
+
+static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 {
     int opt;
 
@@ -46,7 +56,13 @@ struct config * config_new(int argc, char *argv[])
 {
     struct config *this = calloc(1, sizeof(struct config));
 
-    if (parse_config(this, argc, argv) == EXIT_FAILURE) {
+    if (parse_arguments(this, argc, argv) == EXIT_FAILURE) {
+        printf("Failed parsing config\n");
+        free(this);
+        return NULL;
+    }
+
+    if (parse_config(this) == EXIT_FAILURE) {
         printf("Failed parsing config\n");
         free(this);
         return NULL;
@@ -59,5 +75,6 @@ void config_delete(struct config *this)
 {
     free(this->pattern);
     free(this->directory);
+    free(this->file_types);
     free(this);
 }
