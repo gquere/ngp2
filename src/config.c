@@ -22,7 +22,7 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 {
     int opt;
 
-    while ((opt = getopt(argc, argv, "ie")) != -1) {
+    while ((opt = getopt(argc, argv, "ier")) != -1) {
         switch (opt) {
         case 'i':
             this->insensitive_search = 1;
@@ -30,6 +30,10 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 
         case 'e':
             this->regex_search = 1;
+            break;
+
+        case 'r':
+            this->raw_search = 1;
             break;
 
         default:

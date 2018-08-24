@@ -19,6 +19,7 @@
 struct search {
     uint8_t status:1;
     uint8_t case_insensitive:1;
+    uint8_t raw_search:1;
 
     /* search parameters */
     char *directory;
@@ -93,7 +94,8 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
 static uint8_t lookup_file(struct search *this, const char *file)
 {
     /* check file extension */
-    if (!file_utils_check_extension(file, this->file_types)) {
+    if (!file_utils_check_extension(file, this->file_types) &&
+        !this->raw_search) {
         return EXIT_FAILURE;
     }
 
@@ -210,6 +212,7 @@ struct search * search_new(const char *directory, const char *pattern,
     this->pattern = strdup(pattern);
     this->entries = entries;
     this->case_insensitive = config->insensitive_search;
+    this->raw_search = config->raw_search;
     this->file_types = config->file_types;
 
     if (config->insensitive_search) {
