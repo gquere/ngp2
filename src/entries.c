@@ -6,6 +6,8 @@
 
 #include "entries.h"
 
+#define ALLOC_SIZE  5000
+
 
 /* GETTERS ********************************************************************/
 uint8_t entries_is_file(const struct entries *this, const uint32_t index)
@@ -86,7 +88,7 @@ static void check_alloc(struct entries *this)
     }
 
     pthread_mutex_lock(&entries_mutex);
-    void *tmp = realloc(this->entries, (this->size + 500) * sizeof(struct entry));
+    void *tmp = realloc(this->entries, (this->size + ALLOC_SIZE) * sizeof(struct entry));
     if (tmp != NULL) {
         this->entries = tmp;
     } else {
@@ -94,7 +96,7 @@ static void check_alloc(struct entries *this)
     }
     pthread_mutex_unlock(&entries_mutex);
 
-    this->size += 500;
+    this->size += ALLOC_SIZE;
 }
 
 void entries_add(struct entries *this, const uint32_t line, const char *data)
@@ -122,8 +124,8 @@ struct entries * entries_new(void)
 {
     struct entries *this = calloc(1, sizeof(struct entries));
 
-    this->entries = calloc(500, sizeof(struct entry));
-    this->size = 500;
+    this->entries = calloc(ALLOC_SIZE, sizeof(struct entry));
+    this->size = ALLOC_SIZE;
 
     return this;
 }
