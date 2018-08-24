@@ -28,4 +28,4 @@ perf: ngp_perf
 test: check
 
 check: ngp_perf
-	cd test && pwd && ./test*.sh
+	cd test && pwd && for test in ./test_*.sh; do $$test; done

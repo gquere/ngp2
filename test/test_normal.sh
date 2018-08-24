@@ -14,3 +14,5 @@ then
     echo "Got: '$result'"
     exit -1
 fi
+
+echo "$0 OK"
