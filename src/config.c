@@ -17,7 +17,6 @@ static uint8_t parse_config(struct config *this)
     return EXIT_SUCCESS;
 }
 
-
 static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 {
     int opt;
@@ -61,7 +60,7 @@ struct config * config_new(int argc, char *argv[])
     struct config *this = calloc(1, sizeof(struct config));
 
     if (parse_arguments(this, argc, argv) == EXIT_FAILURE) {
-        printf("Failed parsing config\n");
+        printf("Failed parsing arguments\n");
         free(this);
         return NULL;
     }

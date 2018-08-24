@@ -9,22 +9,28 @@
 #include "display.h"
 
 
-static void usage(const char *name)
+/* USAGE **********************************************************************/
+static void usage(void)
 {
-    printf("%s\n", name);
+    printf("usage: ngp [options]... pattern [directory/file]\n\n");
+    printf("options:\n");
+    printf(" -i : case insensitive search\n");
+    printf(" -e : regex search\n");
+    printf(" -r : raw search, ignores extensions restrictions\n");
 }
 
 
+/* MAIN ***********************************************************************/
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
-        usage(argv[0]);
+        usage();
         return EXIT_FAILURE;
     }
 
     struct config *config = config_new(argc, argv);
     if (config == NULL) {
-        usage(argv[0]);
+        usage();
         return EXIT_FAILURE;
     }
 
