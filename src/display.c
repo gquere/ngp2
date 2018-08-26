@@ -94,6 +94,7 @@ static void print_line_contents(const uint32_t y_position, uint32_t line, char *
     /* color patterns */
     char *pattern_position = NULL;
     char *pattern = search_get_pattern(current_search);
+
 //    while ((pattern_position = strstr(data, pattern)) != NULL) { //TODO: why?
     pattern_position = strcasestr(data, pattern); {
         attron(COLOR_PAIR(red));
