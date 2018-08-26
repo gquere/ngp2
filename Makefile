@@ -14,7 +14,7 @@ build: ngp
 clean:
 	rm -f ngp ngp_perf
 
-install:
+install: build
 	cp ngp /usr/local/bin/ngp
 
 ngp: ./src/*.c
