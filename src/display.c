@@ -78,29 +78,41 @@ static void display_status(const struct search *search, const struct entries *en
 
 
 /* PRINT DATA *****************************************************************/
-static void print_line_contents(const uint32_t y_position, uint32_t line, char *data)
+static void print_line_contents(const uint32_t y_position,
+                                const uint32_t line_number,
+                                char *line_contents)
 {
     char line_str[10] = {0};
-    size_t line_str_len = snprintf(line_str, 10, "%d:", line);
+    size_t line_str_len = snprintf(line_str, 10, "%d:", line_number);
 
-    /* line number */
+    /* print the line number */
     attron(COLOR_PAIR(yellow));
     mvprintw(y_position, 0, "%s", line_str);
 
-    /* line data */
+    /* first, print whole line contents */
     attron(COLOR_PAIR(normal));
-    mvprintw(y_position, line_str_len, "%s", data);
+    mvprintw(y_position, line_str_len, "%s", line_contents);
 
-    /* color patterns */
+    /* next, color all patterns on line */
     char *pattern_position = NULL;
     char *pattern = search_get_pattern(current_search);
+    char *ptr = line_contents;
+    move(y_position, line_str_len); // reset cursor to beginning of line
 
-//    while ((pattern_position = strstr(data, pattern)) != NULL) { //TODO: why?
-    pattern_position = strcasestr(data, pattern); {
+    /* find next occurrence of pattern */
+    while ((pattern_position = strstr(ptr, pattern))) {
+
+        /* move by 1 char until pattern is reached */
+        while (ptr < pattern_position) {
+            addch(*ptr);
+            ptr++;
+        }
+
+        /* print pattern then move ptr by pattern size */
         attron(COLOR_PAIR(red));
-        mvprintw(y_position, line_str_len + pattern_position - data, "%s", pattern);
+        printw("%s", pattern);
         attron(COLOR_PAIR(normal));
-        data += (pattern_position - data);
+        ptr += strlen(pattern);
     }
 }
 
