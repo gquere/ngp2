@@ -65,6 +65,10 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
         }
 
         p = endline + 1;
+        if (p == orig_p + p_len) {
+            return;
+        }
+
         line_number++;
     }
 
