@@ -19,12 +19,12 @@ void open_entry(const struct entries *entries, const uint32_t index)
     }
     uint32_t line = entries_get_line(entries, index);
 
-    /* vim <file> -c <line_nr> -c /<pattern> */
-    char *vim_cmdline = "vim %s -c %d -c /%s";
+    /* vim <file> -c /<pattern> -c <line_nr> */
+    char *vim_cmdline = "vim %s -c /%s -c %d";
     char command[256] = {0};
 
     snprintf(command, sizeof(command), vim_cmdline,
-             file, line, search_get_pattern(current_search));
+             file, search_get_pattern(current_search), line);
 
     system(command);
 }
