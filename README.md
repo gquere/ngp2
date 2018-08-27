@@ -8,6 +8,10 @@ ngp2 is a rewrite from the discontinued [ncurses-grep](https://github.com/gquere
 
 It lets you browse results of a grep-like search in a Vim-like style and open them in your favourite editor (vim) at the right line.
 
+
+![yay](/capture.png)
+
+
 Features
 --------
 
