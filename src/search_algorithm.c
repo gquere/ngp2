@@ -92,7 +92,7 @@ char * search_algorithm_rabin_karp(const char *text,
 #define ASCII_ALPHABET  256
 unsigned long int skipt[ASCII_ALPHABET];
 int psize = 0;
-void search_agorithm_pre_bmh(const char *pattern)
+void search_algorithm_pre_bmh(const char *pattern)
 {
 
     psize = strlen(pattern);
@@ -125,18 +125,21 @@ void search_agorithm_pre_bmh(const char *pattern)
 char * search_algorithm_bmh(const char *text,
                             const char *pattern, int tsize)
 {
-    int i;
+    int i = 0;
 
-    i = 0;
     while (i <= tsize - psize) {
-        if (text[i + psize - 1] == pattern[psize - 1] && text[i] == pattern[0])
-            if (!memcmp(text + i + 1, pattern + 1, psize - 2))
+
+        if (text[i + psize - 1] == pattern[psize - 1] && text[i] == pattern[0]) {
+            if (!memcmp(text + i + 1, pattern + 1, psize - 2)) {
                 return (char *) text + i;
-        if (text[i + psize - 1] > 0)
+            }
+        }
+
+        if ((uint8_t) text[i + psize - 1] < 0x21 || (uint8_t) text[i + psize - 1] > 0x7f) {
+            i += psize;
+        } else {
             i += skipt[(int) text[i + psize - 1]];
-        else
-            while (text[i + psize - 1] < 0) //unicode
-                i += psize;
+        }
     }
 
     return NULL;
