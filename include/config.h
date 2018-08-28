@@ -11,6 +11,7 @@ struct config {
 
     /* search file types */
     char *file_extensions;
+    uint8_t only_user_extensions:1;
 
     /* search parser type */
     uint8_t insensitive_search:1;
