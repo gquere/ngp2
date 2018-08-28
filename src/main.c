@@ -21,6 +21,7 @@ static void usage(void)
     printf(" -e : regex search\n");
     printf(" -r : raw search, ignores extensions restrictions\n");
     printf(" -f : follow symlinks\n");
+    printf(" -o <ext> : only look in files withs this extension\n");
 }
 
 

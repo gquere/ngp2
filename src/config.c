@@ -12,7 +12,9 @@ static uint8_t parse_config(struct config *this)
 {
     char *extensions = ".c .h .cpp .py .S .pl .sh .php";    //TODO: get this from config file
 
-    this->file_types = strdup(extensions);
+    if (this->file_extensions == NULL) {
+        this->file_extensions = strdup(extensions);
+    }
 
     return EXIT_SUCCESS;
 }
@@ -21,7 +23,7 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 {
     int opt;
 
-    while ((opt = getopt(argc, argv, "ierf")) != -1) {
+    while ((opt = getopt(argc, argv, "ierfo:")) != -1) {
         switch (opt) {
         case 'i':
             this->insensitive_search = 1;
@@ -37,6 +39,10 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 
         case 'f':
             this->follow_symlinks = 1;
+            break;
+
+        case 'o':
+            this->file_extensions = strdup(optarg);
             break;
 
         default:
@@ -82,6 +88,6 @@ void config_delete(struct config *this)
 {
     free(this->pattern);
     free(this->directory);
-    free(this->file_types);
+    free(this->file_extensions);
     free(this);
 }
