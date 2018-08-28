@@ -83,8 +83,8 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
 static uint8_t lookup_file(struct search *this, const char *file)
 {
     /* check file extension */
-    if (!file_utils_check_extension(file, this->file_extensions) &&
-        !this->raw_search) {
+    if (!this->raw_search &&
+        !file_utils_check_extension(file, this->file_extensions)) {
         return EXIT_FAILURE;
     }
 
