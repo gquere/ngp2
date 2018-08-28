@@ -6,10 +6,11 @@
 
 #include <ncurses.h>
 
-#include "search.h"
-#include "entries.h"
 #include "display.h"
+#include "entries.h"
 #include "open.h"
+#include "search.h"
+#include "subsearch.h"
 
 
 #define QUIT    'q'
@@ -28,13 +29,15 @@ enum colors {
 struct display {
     uint32_t index;     // position of first entry to display in entries (0->nb_entries by increment of LINES)
     int32_t cursor;     // position of cursor on screen (0->LINES)
+
+    struct display *parent;
 };
 
 extern struct search *current_search;
 
 
 /* NCURSES ENVIRONMENT ********************************************************/
-static void ncurses_init()
+static void ncurses_init(void)
 {
     initscr();
     cbreak();
@@ -51,9 +54,15 @@ static void ncurses_init()
     curs_set(0);
 }
 
-static void ncurses_stop()
+static void ncurses_stop(void)
 {
     endwin();
+}
+
+static void ncurses_clear_screen(void)
+{
+    clear();
+    refresh();
 }
 
 
@@ -247,11 +256,56 @@ static void key_up(struct display *this, const struct entries *entries)
 }
 
 
+/* SUBSEARCH ******************************************************************/
+/**
+ * Pops a new window for the user to write a new pattern to look for.
+ * Warning: caller is responsible for freeing returned pattern.
+ *
+ * @return  New pattern
+ */
+static char * subsearch_window(void)
+{
+	WINDOW	*searchw;
+	int	j = 0, car;
+
+    char *search = calloc(4096, sizeof(char));
+
+	searchw = newwin(3, 50, (LINES-3)/2 , (COLS-50)/2);
+	box(searchw, 0,0);
+	wrefresh(searchw);
+	refresh();
+
+	mvwprintw(searchw, 1, 1, "To search:");
+	while ((car = wgetch(searchw)) != '\n' && j < 4096) {
+		if (car == 8 || car == 127) { //backspace
+			if (j > 0)
+				search[--j] = 0;
+			mvwprintw(searchw, 1, 1, "To search: %s ", search);
+			continue;
+		}
+
+		if (car == 27) { //escape
+            free(search);
+            delwin(searchw);
+            return NULL;
+		}
+
+		search[j++] = car;
+		mvwprintw(searchw, 1, 1, "To search: %s", search);
+	}
+	search[j] = 0;
+	delwin(searchw);
+
+    return search;
+}
+
+
 /* API ************************************************************************/
-void display_loop(struct display *this, const struct search *search, const struct entries *entries)
+void display_loop(struct display *this, const struct search *search)
 {
     uint8_t run = 1;
     int ch = 0;
+    struct entries *entries = search_get_entries(search);
 
     ncurses_init();
 
@@ -274,15 +328,44 @@ void display_loop(struct display *this, const struct search *search, const struc
             key_up(this, entries);
             break;
 
-        case QUIT:
-            run = 0;
+        case QUIT: {
+            struct search *parent_search = search_get_parent(current_search);
+            if (parent_search) {
+                subsearch_delete(current_search);
+                current_search = parent_search;
+                entries = search_get_entries(current_search);
+                this = this->parent;
+                ncurses_clear_screen();
+            } else {
+                run = 0;
+            }
             break;
+        }
 
         case ENTER:
             ncurses_stop();
             open_entry(entries, this->index + this->cursor);
             ncurses_init();
             break;
+
+        case '/': {
+            char *sub_pattern = subsearch_window();
+            if (sub_pattern == NULL) {
+                break;
+            }
+            struct search *subsearch = subsearch_new(current_search, sub_pattern);
+            free(sub_pattern);
+            subsearch_search(subsearch);
+            current_search = subsearch;
+            entries = search_get_entries(current_search);
+
+            struct display *subdisplay = display_new();
+            subdisplay->parent = this;
+            this = subdisplay;
+
+            ncurses_clear_screen();
+            break;
+        }
 
         default:
             break;
@@ -294,7 +377,7 @@ void display_loop(struct display *this, const struct search *search, const struc
         display_status(search, entries);
 
         /* check if search thread has ended without results */
-        if (!search_get_status(search) && entries->nb_entries == 0) {
+        if (!search_get_status(search) && entries->nb_entries == 0 && !search_get_parent(current_search)) {
             run = 0;
         }
     }

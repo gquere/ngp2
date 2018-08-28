@@ -1,10 +1,12 @@
 #ifndef NGP_DISPLAY_H
 #define NGP_DISPLAY_H
 
+#include "search.h"
+
 struct display;
 
 /* API ************************************************************************/
-void display_loop(struct display *this, const struct search *search, const struct entries *entries);
+void display_loop(struct display *this, const struct search *search);
 
 /* CONSTRUCTOR ****************************************************************/
 struct display * display_new(void);

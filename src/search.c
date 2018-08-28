@@ -12,30 +12,12 @@
 
 #include <regex.h>
 
+#include "search.h"
 #include "entries.h"
 #include "config.h"
 #include "file_utils.h"
 #include "search_algorithm.h"
 
-
-struct search {
-    uint8_t status:1;
-    uint8_t stop:1;
-    uint8_t case_insensitive:1;
-    uint8_t raw_search:1;
-    uint8_t regex_search:1;
-    uint8_t follow_symlinks:1;
-
-    /* search parameters */
-    char *directory;
-    char *pattern;
-    char * (*parser)(const char *, const char *, int);
-    char *file_extensions;
-    regex_t *regex;
-
-    /* storage */
-    struct entries *entries;
-};
 
 extern struct search *current_search;
 
@@ -206,6 +188,16 @@ uint8_t search_get_status(const struct search *this)
 regex_t * search_get_regex(const struct search *this)
 {
     return this->regex;
+}
+
+struct entries * search_get_entries(const struct search *this)
+{
+    return this->entries;
+}
+
+struct search * search_get_parent(const struct search *this)
+{
+    return this->parent;
 }
 
 

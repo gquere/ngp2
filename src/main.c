@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
 #ifndef _PERFORMANCE_TEST
     struct display *display = display_new();
-    display_loop(display, search, entries);
+    display_loop(display, search);
     display_delete(display);
     search_stop(search);
 #endif
