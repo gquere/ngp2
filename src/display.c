@@ -113,6 +113,11 @@ static void print_line_contents(const uint32_t y_position,
     /* find next occurrence of pattern */
     while ((pattern_position = strstr(ptr, pattern))) {
 
+        /* return if pattern is off-screen */
+        if (pattern_position - ptr > COLS) {
+            break;
+        }
+
         /* move by 1 char until pattern is reached */
         while (ptr < pattern_position) {
             addch(*ptr);
