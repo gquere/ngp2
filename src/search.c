@@ -49,8 +49,9 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
     uint32_t line_number = 1;
     char *orig_p = p;
 
-    while ((endline = strchr(p, '\n'))) {
+    size_t remaining_size = p_len;
 
+    while ((endline = memchr(p, '\n', remaining_size))) {
         *endline = '\0';
 
         if (this->parser(p, this->pattern, endline - p) != NULL) {
@@ -64,6 +65,7 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
             entries_add(this->entries, line_number, p);
         }
 
+        remaining_size -= (endline - p) + 1;
         p = endline + 1;
         if (p == orig_p + p_len) {
             return;
@@ -73,17 +75,26 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
     }
 
     /* special case of not newline terminated file */
-    if (endline == NULL && p < orig_p + p_len) {
-        if (this->parser(p, this->pattern, orig_p + p_len - p) != NULL) {
+    if (remaining_size > 0 && endline == NULL) {
+        char *buffer = malloc(remaining_size + 1);
+        if (buffer == NULL) {
+            return;
+        }
 
+        /* need to null-terminate the string ourselves */
+        memcpy(buffer, p, remaining_size);
+        buffer[remaining_size] = '\0';
+
+        if (this->parser(buffer, this->pattern, remaining_size) != NULL) {
             if (first) {
                 /* add file */
                 entries_add(this->entries, 0, file);
                 first = 0;
             }
 
-            entries_add(this->entries, line_number, p);
+            entries_add(this->entries, line_number, buffer);
         }
+        free(buffer);
     }
 }
 
