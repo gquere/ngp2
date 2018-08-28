@@ -138,8 +138,6 @@ static uint8_t lookup_file(struct search *this, const char *file)
 /* DIRECTORY PARSING **********************************************************/
 static uint32_t lookup_directory(struct search *this, const char *directory)
 {
-    //printf("Looking up directory %s\n", directory);
-
     DIR *dir_stream = opendir(directory);
     if (dir_stream == NULL) {
         //printf("Failed opening directory %s\n", directory);
@@ -156,13 +154,13 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
         char dir_entry_path[PATH_MAX];
         snprintf(dir_entry_path, PATH_MAX, "%s/%s", directory, dir_entry->d_name);
 
-        if (dir_entry->d_type&DT_REG) {             // regular file
+        if (dir_entry->d_type == DT_REG) {              // regular file
             lookup_file(this, dir_entry_path);
-        } else if (dir_entry->d_type&DT_DIR) {      // folder
+        } else if (dir_entry->d_type == DT_DIR) {       // folder
             if (!file_utils_is_dir_special(dir_entry->d_name)) {
                 lookup_directory(this, dir_entry_path);
             }
-        } else if (dir_entry->d_type&DT_LNK) {       // symlink
+        } else if (dir_entry->d_type&DT_LNK) {          // symlink
             /* default : ignore symlinks */
             if (this->follow_symlinks) {
                 lookup_file(this, dir_entry_path);
