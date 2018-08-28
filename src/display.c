@@ -6,6 +6,8 @@
 
 #include <ncurses.h>
 
+#include <signal.h>
+
 #include "display.h"
 #include "entries.h"
 #include "open.h"
@@ -326,6 +328,10 @@ void display_loop(struct display *this, const struct search *search)
 
         case KEY_UP:
             key_up(this, entries);
+            break;
+
+        case KEY_RESIZE:
+            ncurses_clear_screen();
             break;
 
         case QUIT: {
