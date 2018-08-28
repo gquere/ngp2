@@ -16,15 +16,22 @@ Features
 --------
 
 - search for a pattern/a regexp in a folder or a file
-- by default, only source files are scanned, though a raw mode or special extensions may be specified
-- follow/no-follow symlinks, exclude directories, ignore case
+- by default, only source files are scanned, though a raw mode (-r) or special extensions may be specified (-t, -o)
+- by default, doesn't follow symlinks to files, override with -f
+- subsearch: search your search! (use '/' after the first results)
+
 
 Usage
 -----
 
-- use arrows and page up/down to navigate the results
-- hit enter to open a result
-- hit q to quit the current search
+- use arrows and page up/down to navigate the results, or the vim keys
+- hit enter to open a result in your favorite editor
+- hit q to quit the current search or the program
+
+Example:
+```
+ngp int /usr/src/
+```
 
 
 Requirements
