@@ -100,7 +100,7 @@ static void print_line_contents(const uint32_t y_position,
 
     /* first, print whole line contents */
     attron(COLOR_PAIR(normal));
-    mvprintw(y_position, line_str_len, "%s", line_contents);
+    mvprintw(y_position, line_str_len, "%.*s", COLS - line_str_len, line_contents);
 
     /* next, color all patterns on line */
     char *pattern_position = NULL;
@@ -143,7 +143,7 @@ static void print_file(struct display *this, const uint32_t y_position, char *fi
 
     attron(COLOR_PAIR(green));
     attron(A_BOLD);
-    mvprintw(y_position, 0, "%s", file);
+    mvprintw(y_position, 0, "%.*s", COLS, file);
     attroff(A_BOLD);
 }
 
