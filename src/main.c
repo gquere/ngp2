@@ -16,13 +16,16 @@ struct search *current_search = NULL;
 static void usage(void)
 {
     printf("usage: ngp [options]... pattern [directory/file]\n\n");
-    printf("options:\n");
+    printf("commandline options:\n");
     printf(" -i : case insensitive search\n");
     printf(" -e : regex search\n");
     printf(" -r : raw search, ignores extensions restrictions\n");
     printf(" -f : follow symlinks\n");
     printf(" -o <ext> : only look in files withs this extension\n");
-    printf(" -t <ext> : add extension to default extension list\n");
+    printf(" -t <ext> : add extension to default extension list\n\n");
+    printf("subsearch options (use when inside ngp):\n");
+    printf("/ : search results for this new pattern\n");
+    printf("\\ : exclude this pattern from the results\n");
 }
 
 
