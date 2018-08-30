@@ -4,7 +4,7 @@
 #include "search.h"
 
 /* API ************************************************************************/
-void subsearch_search(struct search *this);
+void subsearch_search(struct search *this, const uint8_t invert);
 
 /* CONSTRUCTOR ****************************************************************/
 struct search * subsearch_new(struct search *parent, char *pattern);

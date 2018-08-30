@@ -7,7 +7,7 @@
 
 
 /* API ************************************************************************/
-void subsearch_search(struct search *this)
+void subsearch_search(struct search *this, const uint8_t invert)
 {
     struct entries *parent_entries = search_get_entries(this->parent);
 
@@ -28,7 +28,7 @@ void subsearch_search(struct search *this)
         }
 
         char *parent_entries_data = entries_get_data(parent_entries, i);
-        if (strstr(parent_entries_data, this->pattern)) {
+        if ( !!strstr(parent_entries_data, this->pattern) ^ invert) {
             /* check if file has been added yet */
             if (first) {
                 entries_add(this->entries, 0, entries_get_data(parent_entries, file_index));

@@ -366,7 +366,26 @@ void display_loop(struct display *this, const struct search *search)
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern);
             free(sub_pattern);
-            subsearch_search(subsearch);
+            subsearch_search(subsearch, 0);
+            current_search = subsearch;
+            entries = search_get_entries(current_search);
+
+            struct display *subdisplay = display_new();
+            subdisplay->parent = this;
+            this = subdisplay;
+
+            ncurses_clear_screen();
+            break;
+        }
+
+        case '\\': {    //TODO: clean this up
+            char *sub_pattern = subsearch_window();
+            if (sub_pattern == NULL) {
+                break;
+            }
+            struct search *subsearch = subsearch_new(current_search, sub_pattern);
+            free(sub_pattern);
+            subsearch_search(subsearch, 1);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
