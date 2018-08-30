@@ -302,6 +302,12 @@ static char * subsearch_window(void)
 	}
 	search[j] = 0;
 	delwin(searchw);
+    ncurses_clear_screen();
+
+    if (j <= 0) {
+        free(search);
+        return NULL;
+    }
 
     return search;
 }
