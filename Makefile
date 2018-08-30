@@ -1,8 +1,11 @@
 CC = gcc
 
+# SEARCH ALGORITHM #############################################################
+ALGO ?= -D_BMH
+
 # FLAGS ########################################################################
 CFLAGS = -I./include/ -Wall -Wextra -Wpedantic -Wno-unused-function -O3
-CFLAGS += -D_BMH
+CFLAGS += $(ALGO)
 LDFLAGS = -lpthread -lncurses
 
 
