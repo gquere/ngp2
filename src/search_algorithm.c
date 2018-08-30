@@ -135,11 +135,7 @@ char * search_algorithm_bmh(const char *text,
             }
         }
 
-        if ((uint8_t) text[i + psize - 1] < 0x21 || (uint8_t) text[i + psize - 1] > 0x7f) {
-            i += psize;
-        } else {
-            i += skipt[(int) text[i + psize - 1]];
-        }
+        i += skipt[(uint8_t) text[i + psize - 1]];
     }
 
     return NULL;
