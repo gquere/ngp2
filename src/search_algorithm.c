@@ -103,7 +103,8 @@ int psize = 0;
  *
  * @return  EXIT_SUCCESS on success, EXIT_FAILURE otherwise
  */
-uint8_t search_algorithm_pre_bmh(const char *pattern)
+uint8_t search_algorithm_pre_bmh(const char *pattern,
+                                 const uint8_t ignore_binary_files)
 {
 
     psize = strlen(pattern);
@@ -112,8 +113,19 @@ uint8_t search_algorithm_pre_bmh(const char *pattern)
     }
 
     int i;
-    for (i = 0; i < ASCII_ALPHABET; i++)
+    for (i = 0; i < ASCII_ALPHABET; i++) {
         skipt[i] = psize;
+    }
+
+    if (ignore_binary_files) {
+        for (i = 0; i < 0x20; i++) {
+            skipt[i] = 0;
+        }
+
+        for (i = 0x7f; i < ASCII_ALPHABET; i++) {
+            skipt[i] = 0;
+        }
+    }
 
     for (i = 0; i < psize - 1; i++) {
         skipt[(uint8_t) pattern[i]] = psize - i - 1;
@@ -124,7 +136,7 @@ uint8_t search_algorithm_pre_bmh(const char *pattern)
 
 /**
  * Tuned Boyer-Moore-Horspool algorithm:
- * - Checks last, first character of pattern
+ *   Checks last, first character of pattern
  */
 char * search_algorithm_bmh(const char *text,
                             const char *pattern, int tsize)
@@ -137,6 +149,36 @@ char * search_algorithm_bmh(const char *text,
             if (!memcmp(text + i + 1, pattern + 1, psize - 2)) {
                 return (char *) text + i;
             }
+        }
+
+        i += skipt[(uint8_t) text[i + psize - 1]];
+    }
+
+    return NULL;
+}
+
+extern int is_binary;
+
+/**
+ * Tuned Boyer-Moore-Horspool algorithm:
+ *   Checks last, first character of pattern
+ */
+char * search_algorithm_bmh_ignore_binary(const char *text,
+                            const char *pattern, int tsize)
+{
+    int i = 0;
+
+    while (i <= tsize - psize) {
+
+        if (text[i + psize - 1] == pattern[psize - 1] && text[i] == pattern[0]) {
+            if (!memcmp(text + i + 1, pattern + 1, psize - 2)) {
+                return (char *) text + i;
+            }
+        }
+
+        if (skipt[(uint8_t) text[i + psize - 1]] == 0) {
+            is_binary = 1;
+            return NULL;
         }
 
         i += skipt[(uint8_t) text[i + psize - 1]];

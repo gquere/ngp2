@@ -63,7 +63,7 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 {
     int opt;
 
-    while ((opt = getopt(argc, argv, "ierfo:t:x:")) != -1) {
+    while ((opt = getopt(argc, argv, "ierfo:t:x:I")) != -1) {
         switch (opt) {
         case 'i':
             this->insensitive_search = 1;
@@ -92,6 +92,10 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 
         case 'x':
             tree_add_string(this->dir_exclusion_tree, optarg);
+            break;
+
+        case 'I':
+            this->ignore_binaries = 1;
             break;
 
         default:

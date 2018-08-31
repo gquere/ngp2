@@ -17,8 +17,11 @@ char * search_algorithm_rabin_karp(const char *text,
                                    const char *pattern, int text_size);
 
 /* BOYER-MOORE-HORSPOOL *******************************************************/
-uint8_t search_algorithm_pre_bmh(const char *pattern);
+uint8_t search_algorithm_pre_bmh(const char *pattern,
+                                 const uint8_t ignore_binary_files);
 char * search_algorithm_bmh(const char *text,
+                            const char *pattern, int tsize);
+char * search_algorithm_bmh_ignore_binary(const char *text,
                             const char *pattern, int tsize);
 
 /* REGEX SEARCH ***************************************************************/

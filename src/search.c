@@ -22,7 +22,7 @@
 
 
 extern struct search *current_search;
-
+int is_binary;
 
 /* FILE PARSING ***************************************************************/
 static void parse_file_contents(struct search *this, const char *file, char *p,
@@ -34,6 +34,7 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
     char *orig_p = p;
 
     size_t remaining_size = p_len;
+    is_binary = 0;
 
     while ((endline = memchr(p, '\n', remaining_size))) {
         *endline = '\0';
@@ -47,6 +48,8 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
             }
 
             entries_add(this->entries, line_number, p);
+        } else if (is_binary) {
+            return;
         }
 
         remaining_size -= (endline - p) + 1;
@@ -270,6 +273,7 @@ struct search * search_new(const char *directory, const char *pattern,
     this->file_extensions_tree = config->file_extensions_tree;
     this->dir_exclusion_tree = config->dir_exclusion_tree;
     this->follow_symlinks = config->follow_symlinks;
+    this->ignore_binary_files = config->ignore_binaries;
 
     if (config->insensitive_search) {
         this->parser = search_algorithm_insensitive_search;
@@ -287,8 +291,12 @@ struct search * search_new(const char *directory, const char *pattern,
     } else {
         this->parser = search_algorithm_normal_search;
 #ifdef _BMH
-        if (search_algorithm_pre_bmh(this->pattern) == EXIT_SUCCESS) {
-            this->parser = search_algorithm_bmh;
+        if (search_algorithm_pre_bmh(this->pattern, this->ignore_binary_files) == EXIT_SUCCESS) {
+            if (this->ignore_binary_files) {
+                this->parser = search_algorithm_bmh_ignore_binary;
+            } else {
+                this->parser = search_algorithm_bmh;
+            }
         }
 #endif /* _BMH */
 #ifdef _RK

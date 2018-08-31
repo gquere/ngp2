@@ -1,7 +1,7 @@
 #!/bin/bash
 
 make clean
-make perf
+make perf ALGO=
 mv ngp_perf ngp_perf_strstr
 
 make clean

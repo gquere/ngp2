@@ -22,6 +22,7 @@ struct config {
     uint8_t regex_search:1;
     uint8_t raw_search:1;
     uint8_t follow_symlinks:1;
+    uint8_t ignore_binaries:1;
 };
 
 

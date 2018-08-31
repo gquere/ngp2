@@ -16,6 +16,7 @@ struct search {
     uint8_t regex_search:1;
     uint8_t follow_symlinks:1;
     uint8_t invert_search:1;    // used by subsearch to exclude patterns
+    uint8_t ignore_binary_files:1;
 
     /* search parameters */
     char *directory;
