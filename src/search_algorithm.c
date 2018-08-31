@@ -96,35 +96,35 @@ char * search_algorithm_rabin_karp(const char *text,
 #define ASCII_ALPHABET  256
 unsigned long int skipt[ASCII_ALPHABET];
 int psize = 0;
-void search_algorithm_pre_bmh(const char *pattern)
+
+/**
+ * Initialize the BMH's skip-table. This may fail because BMH doesn't work on a
+ * single character.
+ *
+ * @return  EXIT_SUCCESS on success, EXIT_FAILURE otherwise
+ */
+uint8_t search_algorithm_pre_bmh(const char *pattern)
 {
 
     psize = strlen(pattern);
-//  if (psize == 1) {
-//      mainsearch->parser = strstr_wrapper;
-//  }
+    if (psize == 1) {
+        return EXIT_FAILURE;
+    }
 
     int i;
     for (i = 0; i < ASCII_ALPHABET; i++)
         skipt[i] = psize;
 
     for (i = 0; i < psize - 1; i++) {
-        /*
-        if ((int) pattern[i] < 0) {
-            pre_rabin_karp(pattern);
-            mainsearch->parser = rabin_karp;
-            return;
-        }
-        */
-
-        skipt[(int) pattern[i]] = psize - i - 1;
+        skipt[(uint8_t) pattern[i]] = psize - i - 1;
     }
+
+    return EXIT_SUCCESS;
 }
 
 /**
  * Tuned Boyer-Moore-Horspool algorithm:
  * - Checks last, first character of pattern
- * - skips if unicode text
  */
 char * search_algorithm_bmh(const char *text,
                             const char *pattern, int tsize)

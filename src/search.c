@@ -287,8 +287,9 @@ struct search * search_new(const char *directory, const char *pattern,
     } else {
         this->parser = search_algorithm_normal_search;
 #ifdef _BMH
-        search_algorithm_pre_bmh(this->pattern);
-        this->parser = search_algorithm_bmh;
+        if (search_algorithm_pre_bmh(this->pattern) == EXIT_SUCCESS) {
+            this->parser = search_algorithm_bmh;
+        }
 #endif /* _BMH */
 #ifdef _RK
         search_algorithm_pre_rabin_karp(this->pattern);
