@@ -72,16 +72,20 @@ char * search_algorithm_rabin_karp(const char *text,
     int ht;
     int i;
 
+    if (text_size < psize) {
+        return NULL;
+    }
+
     /* compute hash(text) at position 0 */
     for (ht = i = 0; i < psize; i++)
-        ht = (ht << 1) + text[i];
+        ht = (ht << 1) + (uint8_t) text[i];
 
     for (i = 0; i <= text_size - psize; i++) {
         if (ht == hp) /* got a hash match, but it could be a collision */
             if (!memcmp(pattern, text + i, psize))
                 return (char *) text + i;
         /* compute rolling hash for next position */
-        ht = REHASH(text[i], text[i + psize], ht);
+        ht = REHASH((uint8_t) text[i], (uint8_t) text[i + psize], ht);
     }
 
     return NULL;
