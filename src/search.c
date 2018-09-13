@@ -205,6 +205,11 @@ uint8_t search_get_invert(const struct search *this)
     return this->invert_search;
 }
 
+uint8_t search_get_sensitive(const struct search *this)
+{
+    return this->case_insensitive;
+}
+
 
 /* SEARCH THREAD ENTRY POINT **************************************************/
 void * search_thread_start(void *context)
