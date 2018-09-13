@@ -40,6 +40,7 @@ uint8_t search_get_status(const struct search *this);
 regex_t * search_get_regex(const struct search *this);
 struct entries * search_get_entries(const struct search *this);
 struct search * search_get_parent(const struct search *this);
+uint8_t search_get_invert(const struct search *this);
 
 /* SEARCH THREAD ENTRY POINT **************************************************/
 void * search_thread_start(void *context);
