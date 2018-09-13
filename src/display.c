@@ -273,7 +273,7 @@ static void key_up(struct display *this, const struct entries *entries)
  *
  * @return  New pattern
  */
-static char * subsearch_window(void)
+static char * subsearch_window(const uint8_t invert)
 {
 	WINDOW	*searchw;
 	int	j = 0, car;
@@ -285,12 +285,27 @@ static char * subsearch_window(void)
 	wrefresh(searchw);
 	refresh();
 
-	mvwprintw(searchw, 1, 1, "To search:");
+    char *include = "To include: ";
+    char *exclude = "To exclude: ";
+    char *include_format = "To include: %s ";
+    char *exclude_format = "To exclude: %s ";
+    char *text = NULL;
+    char *format = NULL;
+
+    if (invert) {
+        text = exclude;
+        format = exclude_format;
+    } else {
+        text = include;
+        format = include_format;
+    }
+    mvwprintw(searchw, 1, 1, text, NULL);
+
 	while ((car = wgetch(searchw)) != '\n' && j < 4096) {
 		if (car == 8 || car == 127) { //backspace
 			if (j > 0)
 				search[--j] = 0;
-			mvwprintw(searchw, 1, 1, "To search: %s ", search);
+			mvwprintw(searchw, 1, 1, format, search);
 			continue;
 		}
 
@@ -301,7 +316,7 @@ static char * subsearch_window(void)
 		}
 
 		search[j++] = car;
-		mvwprintw(searchw, 1, 1, "To search: %s", search);
+		mvwprintw(searchw, 1, 1, format, search);
 	}
 	search[j] = 0;
 	delwin(searchw);
@@ -369,7 +384,7 @@ void display_loop(struct display *this, const struct search *search)
             break;
 
         case '/': {
-            char *sub_pattern = subsearch_window();
+            char *sub_pattern = subsearch_window(0);
             if (sub_pattern == NULL) {
                 break;
             }
@@ -388,7 +403,7 @@ void display_loop(struct display *this, const struct search *search)
         }
 
         case '\\': {    //TODO: clean this up
-            char *sub_pattern = subsearch_window();
+            char *sub_pattern = subsearch_window(1);
             if (sub_pattern == NULL) {
                 break;
             }
