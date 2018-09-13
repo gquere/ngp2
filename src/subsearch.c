@@ -7,7 +7,7 @@
 
 
 /* API ************************************************************************/
-void subsearch_search(struct search *this, const uint8_t invert)
+void subsearch_search(struct search *this)
 {
     struct entries *parent_entries = search_get_entries(this->parent);
 
@@ -20,7 +20,7 @@ void subsearch_search(struct search *this, const uint8_t invert)
     for (i = 0; i < parent_nb_entries; i++) {
         uint32_t parent_entries_line = entries_get_line(parent_entries, i);
 
-        /* if it's a file, store its index for if there's a line match later */
+        /* if it's a file, store its index in case there's a line match later */
         if (parent_entries_line == 0) {
             first = 1;
             file_index = i;
@@ -28,7 +28,7 @@ void subsearch_search(struct search *this, const uint8_t invert)
         }
 
         char *parent_entries_data = entries_get_data(parent_entries, i);
-        if ( !!strstr(parent_entries_data, this->pattern) ^ invert) {
+        if ( !!strstr(parent_entries_data, this->pattern) ^ this->invert_search) {
             /* check if file has been added yet */
             if (first) {
                 entries_add(this->entries, 0, entries_get_data(parent_entries, file_index));
@@ -43,12 +43,14 @@ void subsearch_search(struct search *this, const uint8_t invert)
 
 
 /* CONSTRUCTOR ****************************************************************/
-struct search * subsearch_new(struct search *parent, char *pattern)
+struct search * subsearch_new(struct search *parent, char *pattern,
+                              const uint8_t invert_search)
 {
     struct search *this = calloc(1, sizeof(struct search));
     this->regex_search = 1;
     this->pattern = strdup(pattern);
     this->parent = parent;
+    this->invert_search = invert_search;
 
     this->entries = entries_new();
 

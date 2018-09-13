@@ -388,9 +388,9 @@ void display_loop(struct display *this, const struct search *search)
             if (sub_pattern == NULL) {
                 break;
             }
-            struct search *subsearch = subsearch_new(current_search, sub_pattern);
+            struct search *subsearch = subsearch_new(current_search, sub_pattern, 0);
             free(sub_pattern);
-            subsearch_search(subsearch, 0);
+            subsearch_search(subsearch);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
@@ -407,9 +407,9 @@ void display_loop(struct display *this, const struct search *search)
             if (sub_pattern == NULL) {
                 break;
             }
-            struct search *subsearch = subsearch_new(current_search, sub_pattern);
+            struct search *subsearch = subsearch_new(current_search, sub_pattern, 1);
             free(sub_pattern);
-            subsearch_search(subsearch, 1);
+            subsearch_search(subsearch);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
