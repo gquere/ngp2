@@ -224,6 +224,7 @@ void * search_thread_start(void *context)
     }
 
     if (file_utils_is_file(this->directory)) {
+        this->raw_search = 1;
         lookup_file(this, this->directory);
     } else if (file_utils_is_dir(this->directory)) {
         lookup_directory(this, this->directory);
