@@ -189,7 +189,8 @@ static void page_down(struct display *this, const struct entries *entries)
 {
     uint32_t nb_entries = entries_get_nb_entries(entries);
 
-    if (this->index + LINES > nb_entries) {
+    /* if there isn't a next page, move to the last entry on this page */
+    if (this->index + LINES >= nb_entries) {
         this->cursor = nb_entries - this->index - 1;
         return;
     }
