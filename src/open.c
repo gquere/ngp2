@@ -58,9 +58,9 @@ void open_entry(const struct entries *entries, const uint32_t index)
     /* vim <file> -c /<pattern> -c <line_nr> */
     char *vim_cmdline = NULL;
     if (search_get_sensitive(current_search)) {
-        vim_cmdline = "vim %s -c \"/\\c%s\" -c %d";
+        vim_cmdline = "vim \"%s\" -c \"/\\c%s\" -c %d";
     } else {
-        vim_cmdline = "vim %s -c \"/%s\" -c %d";
+        vim_cmdline = "vim \"%s\" -c \"/%s\" -c %d";
     }
     char command[256] = {0};
 
