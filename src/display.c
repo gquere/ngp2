@@ -120,7 +120,7 @@ static void print_line_contents(const uint32_t y_position,
     while ((pattern_position = strcasestr(ptr, pattern))) {
 
         /* return if pattern is off-screen */
-        if (pattern_position - ptr > COLS) {
+        if (pattern_position - line_contents > COLS) {
             break;
         }
 
