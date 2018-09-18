@@ -1,8 +1,8 @@
-CC = clang
+CC = gcc
 
 # FLAGS ########################################################################
 CFLAGS = -I./include/ -Wall -Wextra -Wpedantic -Wno-unused-function -O3
-#CFLAGS += -D_RK
+#CFLAGS += -D_BMH
 LDFLAGS = -lpthread -lncurses
 
 
