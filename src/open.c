@@ -16,7 +16,8 @@ char * sanitize_pattern(const char *pattern)
     size_t escape_count = 0;
     size_t orig_count = 0;
     while (orig_count < strlen(pattern)) {
-        if (pattern[orig_count] == '"' || pattern[orig_count] == '\\') {
+        if (pattern[orig_count] == '"' || pattern[orig_count] == '\\' ||
+            pattern[orig_count] == '$' || pattern[orig_count] == '`') {
             escape_count++;
         }
         orig_count++;
@@ -28,11 +29,8 @@ char * sanitize_pattern(const char *pattern)
     size_t sanitized_count = 0;
 
     while (orig_count < strlen(pattern) + escape_count) {
-        if (pattern[orig_count] == '"') {
-            sanitized_pattern[sanitized_count++] = '\\';
-        }
-
-        if (pattern[orig_count] == '\\') {
+        if (pattern[orig_count] == '"' || pattern[orig_count] == '\\' ||
+            pattern[orig_count] == '$' || pattern[orig_count] == '`') {
             sanitized_pattern[sanitized_count++] = '\\';
         }
 
