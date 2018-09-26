@@ -88,6 +88,10 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    if (strlen(this->pattern) == 0) {
+        return EXIT_FAILURE;
+    }
+
     return EXIT_SUCCESS;
 }
 
