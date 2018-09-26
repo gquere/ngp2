@@ -177,7 +177,13 @@ void search_stop(struct search *this)
 /* GETTERS ********************************************************************/
 char * search_get_pattern(const struct search *this)
 {
-    return this->pattern;
+    /* getting the pattern is tricky because search could exclude patterns */
+    const struct search *no_excl = this;
+    while (no_excl->invert_search) {
+        no_excl = search_get_parent(no_excl);
+    }
+
+    return no_excl->pattern;
 }
 
 uint8_t search_get_status(const struct search *this)

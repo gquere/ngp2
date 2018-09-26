@@ -104,12 +104,7 @@ static void print_line_contents(const uint32_t y_position,
     attron(COLOR_PAIR(normal));
     mvprintw(y_position, line_str_len, "%.*s", COLS - line_str_len, line_contents);
 
-    /* get pattern to highlight, tricky because search could exclude patterns */
-    struct search *no_excl = current_search;
-    while (no_excl->invert_search) {
-        no_excl = search_get_parent(no_excl);
-    }
-    char *pattern = search_get_pattern(no_excl);
+    char *pattern = search_get_pattern(current_search);
 
     /* next, color all patterns on line */
     char *pattern_position = NULL;
