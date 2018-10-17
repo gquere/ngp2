@@ -388,6 +388,7 @@ void display_loop(struct display *this, const struct search *search)
         case '/': {
             char *sub_pattern = subsearch_window(0);
             if (sub_pattern == NULL) {
+                ncurses_clear_screen();
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 0);
@@ -407,6 +408,7 @@ void display_loop(struct display *this, const struct search *search)
         case '\\': {    //TODO: clean this up
             char *sub_pattern = subsearch_window(1);
             if (sub_pattern == NULL) {
+                ncurses_clear_screen();
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 1);
