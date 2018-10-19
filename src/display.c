@@ -75,18 +75,20 @@ static void display_bar(struct display *this, const struct search *search, const
     char *rollingwheel[4] = {"/", "-", "\\", "|"};
 
     /* decide rolling wheel character */
-    char *roll_char;
+    char *roll_char = ".";
     if (search_get_status(search)) {
         roll_char = rollingwheel[++i%4];
-    } else {
-        roll_char = ".";
     }
 
-    /* build line */
+    /* build status line */
     char buf[1024] = {0};
-    int percent_completed = (100 * (this->index + this->cursor + 1)) / entries->nb_entries;
+    int percent_completed = 0;
+    if (entries->nb_entries) {
+        percent_completed = (100 * (this->index + this->cursor + 1)) / entries->nb_entries;
+    }
     snprintf(buf, 1024, "  %d %d%% %s", entries->nb_entries, percent_completed, roll_char);
 
+    /* print status line */
     attron(COLOR_PAIR(normal));
     mvaddstr(LINES - 1, COLS - strlen(buf), buf);
 }
