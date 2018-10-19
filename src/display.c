@@ -268,6 +268,22 @@ static void key_up(struct display *this, const struct entries *entries)
 }
 
 
+/* GOTO LINE NUMBER ***********************************************************/
+static void goto_home(struct display *this)
+{
+    this->index = 0;
+    this->cursor = 1;
+}
+
+static void goto_end(struct display *this, const struct entries *entries)
+{
+    uint32_t nb_entries = entries_get_nb_entries(entries);
+
+    this->index = (nb_entries / LINES) * LINES;
+    this->cursor = nb_entries % LINES - 1;
+}
+
+
 /* SUBSEARCH ******************************************************************/
 /**
  * Pops a new window for the user to write a new pattern to look for.
@@ -385,6 +401,7 @@ void display_loop(struct display *this, const struct search *search)
             ncurses_init();
             break;
 
+        /* subsearch include */
         case '/': {
             char *sub_pattern = subsearch_window(0);
             if (sub_pattern == NULL) {
@@ -405,6 +422,7 @@ void display_loop(struct display *this, const struct search *search)
             break;
         }
 
+        /* subsearch exclude */
         case '\\': {    //TODO: clean this up
             char *sub_pattern = subsearch_window(1);
             if (sub_pattern == NULL) {
@@ -424,6 +442,17 @@ void display_loop(struct display *this, const struct search *search)
             ncurses_clear_screen();
             break;
         }
+
+        /* goto line number */
+        case KEY_HOME:
+            goto_home(this);
+            ncurses_clear_screen();
+            break;
+
+        case KEY_END:
+            goto_end(this, entries);
+            ncurses_clear_screen();
+            break;
 
         default:
             break;
