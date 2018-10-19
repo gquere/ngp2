@@ -29,8 +29,8 @@ enum colors {
 };
 
 struct display {
-    uint32_t index;     // position of first entry to display in entries (0->nb_entries by increment of LINES)
-    int32_t cursor;     // position of cursor on screen (0->LINES)
+    uint32_t index;     // position of first entry to display in entries (0->nb_entries by increment of (LINES - 1))
+    int32_t cursor;     // position of cursor on screen (0->(LINES - 1))
 
     struct display *parent;
 };
@@ -69,6 +69,11 @@ static void ncurses_clear_screen(void)
 
 
 /* PRINT STATUS ***************************************************************/
+static void display_bar(struct display *this, const struct search *search, const struct entries *entries)
+{
+    
+}
+
 static void display_status(const struct search *search, const struct entries *entries)
 {
     char *rollingwheel[4] = {"/", "-", "\\", "|"};
@@ -224,7 +229,7 @@ static void display_entries(struct display *this, const struct entries *entries)
 {
     uint32_t i = 0;
 
-    for (i = this->index; i < this->index + LINES; i++) {
+    for (i = this->index; i < this->index + (LINES - 1); i++) {
 
         if (entries_get_data(entries, i) == NULL) {
             break;
@@ -241,7 +246,7 @@ static void page_down(struct display *this, const struct entries *entries)
     uint32_t nb_entries = entries_get_nb_entries(entries);
 
     /* if there isn't a next page, move to the last entry on this page */
-    if (this->index + LINES >= nb_entries) {
+    if (this->index + (LINES - 1) >= nb_entries) {
         this->cursor = nb_entries - this->index - 1;
         return;
     }
@@ -249,7 +254,7 @@ static void page_down(struct display *this, const struct entries *entries)
     clear();
     refresh();
 
-    this->index += LINES;
+    this->index += (LINES - 1);
     this->cursor = 0;
 
     if (entries_is_file(entries, this->index + this->cursor)) {
@@ -269,8 +274,8 @@ static void page_up(struct display *this, const struct entries *entries)
     clear();
     refresh();
 
-    this->cursor = LINES - 1;
-    this->index -= LINES;
+    this->cursor = (LINES - 1) - 1;
+    this->index -= (LINES - 1);
 
     if (entries_is_file(entries, this->index + this->cursor)) {
         this->cursor -= 1;
@@ -285,7 +290,7 @@ static void key_down(struct display *this, const struct entries *entries)
         return;
     }
 
-    if (this->cursor == LINES - 1) {
+    if (this->cursor == (LINES - 1) - 1) {
         page_down(this, entries);
         return;
     }
@@ -297,7 +302,7 @@ static void key_down(struct display *this, const struct entries *entries)
         this->cursor++;
     }
 
-    if (this->cursor > LINES - 1) {
+    if (this->cursor > (LINES - 1) - 1) {
         page_down(this, entries);
         return;
     }
@@ -335,8 +340,8 @@ static void goto_end(struct display *this, const struct entries *entries)
 {
     uint32_t nb_entries = entries_get_nb_entries(entries);
 
-    this->index = (nb_entries / LINES) * LINES;
-    this->cursor = nb_entries % LINES - 1;
+    this->index = (nb_entries / (LINES - 1)) * (LINES - 1);
+    this->cursor = nb_entries % (LINES - 1) - 1;
 }
 
 
@@ -354,7 +359,7 @@ static char * subsearch_window(const uint8_t invert)
 
     char *search = calloc(4096, sizeof(char));
 
-	searchw = newwin(3, 50, (LINES-3)/2 , (COLS-50)/2);
+	searchw = newwin(3, 50, ((LINES - 1)-3)/2 , (COLS-50)/2);
 	box(searchw, 0,0);
 	wrefresh(searchw);
 	refresh();
@@ -517,7 +522,8 @@ void display_loop(struct display *this, const struct search *search)
         usleep(10000);
         refresh();
         display_entries(this, entries);
-        display_status(search, entries);
+        display_bar(this, search, entries);
+        //display_status(search, entries);
 
         /* check if search thread has ended without results */
         if (!search_get_status(search) && entries->nb_entries == 0 && !search_get_parent(current_search)) {
