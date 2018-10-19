@@ -71,25 +71,24 @@ static void ncurses_clear_screen(void)
 /* PRINT STATUS ***************************************************************/
 static void display_bar(struct display *this, const struct search *search, const struct entries *entries)
 {
-    
-}
-
-static void display_status(const struct search *search, const struct entries *entries)
-{
-    char *rollingwheel[4] = {"/", "-", "\\", "|"};
     static int i = 0;
+    char *rollingwheel[4] = {"/", "-", "\\", "|"};
 
-    attron(COLOR_PAIR(normal));
-
+    /* decide rolling wheel character */
+    char *roll_char;
     if (search_get_status(search)) {
-        mvaddstr(0, COLS - 1, rollingwheel[++i%4]);
+        roll_char = rollingwheel[++i%4];
     } else {
-        mvaddstr(0, COLS - 5, "Done.");
+        roll_char = ".";
     }
 
-    char nbhits[15];
-    snprintf(nbhits, 15, "Hits: %d", entries_get_nb_lines(entries));
-    mvaddstr(1, COLS - (int)(strchr(nbhits, '\0') - nbhits), nbhits);
+    /* build line */
+    char buf[1024] = {0};
+    int percent_completed = (100 * (this->index + this->cursor + 1)) / entries->nb_entries;
+    snprintf(buf, 1024, "  %d %d%% %s", entries->nb_entries, percent_completed, roll_char);
+
+    attron(COLOR_PAIR(normal));
+    mvaddstr(LINES - 1, COLS - strlen(buf), buf);
 }
 
 
@@ -523,7 +522,6 @@ void display_loop(struct display *this, const struct search *search)
         refresh();
         display_entries(this, entries);
         display_bar(this, search, entries);
-        //display_status(search, entries);
 
         /* check if search thread has ended without results */
         if (!search_get_status(search) && entries->nb_entries == 0 && !search_get_parent(current_search)) {
