@@ -421,6 +421,7 @@ void display_loop(struct display *this, const struct search *search)
     ncurses_init();
 
     while ((ch = getch()) && run) {
+        int sleep_time = 10000;
         switch(ch) {
 
         case KEY_NPAGE:
@@ -433,10 +434,12 @@ void display_loop(struct display *this, const struct search *search)
 
         case KEY_DOWN:
             key_down(this, entries);
+            sleep_time = 100;
             break;
 
         case KEY_UP:
             key_up(this, entries);
+            sleep_time = 100;
             break;
 
         case KEY_RESIZE:
@@ -520,7 +523,7 @@ void display_loop(struct display *this, const struct search *search)
             break;
         }
 
-        usleep(10000);
+        usleep(sleep_time);
         refresh();
         display_entries(this, entries);
         display_bar(this, search, entries);
