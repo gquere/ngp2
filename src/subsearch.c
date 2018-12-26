@@ -28,7 +28,7 @@ void subsearch_search(struct search *this)
         }
 
         char *parent_entries_data = entries_get_data(parent_entries, i);
-        if ( !!strstr(parent_entries_data, this->pattern) ^ this->invert_search) {
+        if (!!strstr(parent_entries_data, this->pattern) ^ this->invert_search) {
             /* check if file has been added yet */
             if (first) {
                 entries_add(this->entries, 0, entries_get_data(parent_entries, file_index));
