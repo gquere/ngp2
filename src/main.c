@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     pthread_create(&search_thread, NULL, search_thread_start, (void *) search);
 
 #ifndef _PERFORMANCE_TEST
-    struct display *display = display_new();
+    struct display *display = display_new(NULL, search_get_pattern(search));
     display_loop(display, search);
     display_delete(display);
     search_stop(search);

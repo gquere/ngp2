@@ -33,6 +33,7 @@ struct display {
     int32_t cursor;     // position of cursor on screen (0->(LINES - 1))
 
     struct display *parent;
+    char *pattern;
 };
 
 extern struct search *current_search;
@@ -81,16 +82,20 @@ static void display_bar(struct display *this, const struct search *search, const
     }
 
     /* build status line */
-    char buf[1024] = {0};
+    char *buf = calloc(COLS, sizeof(char));
     int percent_completed = 0;
     if (entries->nb_entries) {
         percent_completed = (100 * (this->index + this->cursor + 1)) / entries->nb_entries;
     }
-    snprintf(buf, 1024, "  %d %d%% %s", entries->nb_entries, percent_completed, roll_char);
+    snprintf(buf, COLS, "%s%*s", this->pattern, (int)(COLS - strlen(this->pattern)), "");
+    char tmp[256] = {0};
+    snprintf(tmp, 256, "   %d %d%% %s", entries->nb_entries, percent_completed, roll_char);
+    memcpy(buf + COLS - strlen(tmp), tmp, strlen(tmp));
 
     /* print status line */
     attron(COLOR_PAIR(normal));
-    mvaddstr(LINES - 1, COLS - strlen(buf), buf);
+    mvaddstr(LINES - 1, 0, buf);
+    free(buf);
 }
 
 
@@ -474,13 +479,12 @@ void display_loop(struct display *this, const struct search *search)
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 0);
-            free(sub_pattern);
             subsearch_search(subsearch);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
-            struct display *subdisplay = display_new();
-            subdisplay->parent = this;
+            struct display *subdisplay = display_new(this, sub_pattern);
+            free(sub_pattern);
             this = subdisplay;
 
             ncurses_clear_screen();
@@ -495,13 +499,12 @@ void display_loop(struct display *this, const struct search *search)
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 1);
-            free(sub_pattern);
             subsearch_search(subsearch);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
-            struct display *subdisplay = display_new();
-            subdisplay->parent = this;
+            struct display *subdisplay = display_new(this, sub_pattern);
+            free(sub_pattern);
             this = subdisplay;
 
             ncurses_clear_screen();
@@ -528,8 +531,9 @@ void display_loop(struct display *this, const struct search *search)
         display_entries(this, entries);
         display_bar(this, search, entries);
 
-        /* check if search thread has ended without results */
-        if (!search_get_status(search) && entries->nb_entries == 0 && !search_get_parent(current_search)) {
+        /* check if main search thread has ended without results */
+        if (!search_get_parent(current_search) &&
+            !search_get_status(search) && entries->nb_entries == 0) {
             run = 0;
         }
     }
@@ -539,14 +543,32 @@ void display_loop(struct display *this, const struct search *search)
 
 
 /* CONSTRUCTOR ****************************************************************/
-struct display * display_new(void)
+struct display * display_new(struct display *parent, char *pattern)
 {
     struct display *this = calloc(1, sizeof(struct display));
+
+    this->parent = parent;
+    if (this->parent) {
+        size_t length = strlen(this->parent->pattern) + 2 + strlen(pattern) + 1;
+        this->pattern = calloc(length, sizeof(char));
+
+        char search_invert;
+        if (search_get_invert(current_search)) {
+            search_invert = '\\';
+        } else {
+            search_invert = '/';
+        }
+
+        snprintf(this->pattern, length, "%s %c%s", this->parent->pattern, search_invert, pattern);
+    } else {
+        this->pattern = strdup(pattern);
+    }
 
     return this;
 }
 
 void display_delete(struct display *this)
 {
+    free(this->pattern);
     free(this);
 }
