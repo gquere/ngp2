@@ -89,30 +89,62 @@ static void display_status(const struct search *search, const struct entries *en
 
 
 /* PRINT DATA *****************************************************************/
-static void print_line_contents(const uint32_t y_position,
-                                const uint32_t line_number,
-                                char *line_contents)
+/**
+ * Find and colorize regex patterns.
+ */
+static void colorize_regex_pattern(char *line_contents)
 {
-    char line_str[10] = {0};
-    size_t line_str_len = snprintf(line_str, 10, "%d:", line_number);
+    /* only one match cuz I'm lazy */
+    regmatch_t pmatch[1];
+    regexec(search_get_regex(current_search), line_contents, 1, pmatch, 0);
+    size_t start = pmatch[0].rm_so;
+    int stop = pmatch[0].rm_eo;
 
-    /* print the line number */
-    attron(COLOR_PAIR(yellow));
-    mvprintw(y_position, 0, "%s", line_str);
+    char *ptr = line_contents;
 
-    /* first, print whole line contents */
+    while (ptr < line_contents + start) {
+        /* return if going offscreen  */
+        if (ptr - line_contents > COLS) {
+            return;
+        }
+        addch(*ptr);
+        ptr++;
+    }
+
+    attron(COLOR_PAIR(red));
+
+    while (ptr < line_contents + stop) {
+        /* return if part of pattern is off-screen */
+        if (ptr - line_contents > COLS) {
+            return;
+        }
+        addch(*ptr);
+        ptr++;
+    }
+
     attron(COLOR_PAIR(normal));
-    mvprintw(y_position, line_str_len, "%.*s", COLS - line_str_len, line_contents);
+}
+
+/**
+ * Find and colorize normal patterns.
+ */
+static void colorize_normal_patterns(char *line_contents)
+{
+    char *ptr = line_contents;
 
     char *pattern = search_get_pattern(current_search);
-
-    /* next, color all patterns on line */
     char *pattern_position = NULL;
-    char *ptr = line_contents;
-    move(y_position, line_str_len); // reset cursor to beginning of line
+
+    char *(*search_function)(const char *, const char *);
+
+    if (search_get_sensitive(current_search)) {
+        search_function = strcasestr;
+    } else {
+        search_function = strstr;
+    }
 
     /* find next occurrence of pattern */
-    while ((pattern_position = strcasestr(ptr, pattern))) {
+    while ((pattern_position = search_function(ptr, pattern))) {
 
         /* return if pattern is off-screen */
         if (pattern_position - line_contents > COLS) {
@@ -130,6 +162,30 @@ static void print_line_contents(const uint32_t y_position,
         printw("%s", pattern);
         attron(COLOR_PAIR(normal));
         ptr += strlen(pattern);
+    }
+}
+
+static void print_line_contents(const uint32_t y_position,
+                                const uint32_t line_number,
+                                char *line_contents)
+{
+    char line_str[10] = {0};
+    size_t line_str_len = snprintf(line_str, 10, "%d:", line_number);
+
+    /* print the line number */
+    attron(COLOR_PAIR(yellow));
+    mvprintw(y_position, 0, "%s", line_str);
+
+    /* first, print whole line contents */
+    attron(COLOR_PAIR(normal));
+    mvprintw(y_position, line_str_len, "%.*s", COLS - line_str_len, line_contents);
+    move(y_position, line_str_len); // reset cursor to beginning of line
+
+    /* next, overwrite patterns on the line */
+    if (search_get_regex(current_search)) {
+        colorize_regex_pattern(line_contents);
+    } else {
+        colorize_normal_patterns(line_contents);
     }
 }
 
