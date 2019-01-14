@@ -89,7 +89,7 @@ static void display_bar(struct display *this, const struct search *search, const
     }
     snprintf(buf, COLS, "%s%*s", this->pattern, (int)(COLS - strlen(this->pattern)), "");
     char tmp[256] = {0};
-    snprintf(tmp, 256, "   %d %d%% %s", entries->nb_entries, percent_completed, roll_char);
+    snprintf(tmp, 256, "   %d %d%% %s", entries_get_nb_lines(entries), percent_completed, roll_char);
     memcpy(buf + COLS - strlen(tmp), tmp, strlen(tmp));
 
     /* print status line */
