@@ -81,15 +81,22 @@ static void display_bar(struct display *this, const struct search *search, const
         roll_char = rollingwheel[++i%4];
     }
 
-    /* build status line */
+    /* build first part of status line that shows patterns */
     char *buf = calloc(COLS, sizeof(char));
-    int percent_completed = 0;
-    if (entries->nb_entries) {
-        percent_completed = (100 * (this->index + this->cursor + 1)) / entries->nb_entries;
-    }
     snprintf(buf, COLS, "%s%*s", this->pattern, (int)(COLS - strlen(this->pattern)), "");
+
+    /* calculate percent of entries scrolled */
+    int percent_completed = 0;
+    uint32_t nb_entries = entries_get_nb_entries(entries);
+    if (nb_entries) {
+        percent_completed = (100 * (this->index + this->cursor + 1)) / nb_entries;
+    }
+
+    /* build second part of status line that shows number of entries */
     char tmp[256] = {0};
     snprintf(tmp, 256, "   %d %d%% %s", entries_get_nb_lines(entries), percent_completed, roll_char);
+
+    /* fuuuuuuu-sion */
     memcpy(buf + COLS - strlen(tmp), tmp, strlen(tmp));
 
     /* print status line */
