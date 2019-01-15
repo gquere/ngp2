@@ -141,6 +141,21 @@ void entries_add(struct entries *this, const uint32_t line, const char *data)
     }
 }
 
+void entries_copy(struct entries *this, struct entry *copy)
+{
+    /* check size of entries */
+    check_alloc(this);
+
+    this->entries[this->nb_entries].line = copy->line;
+    this->entries[this->nb_entries].data = copy->data;
+    this->entries[this->nb_entries].visited = copy->visited;
+
+    this->nb_entries++;
+    if (copy->line != 0) {
+        this->nb_lines++;
+    }
+}
+
 
 /* CONSTRUCTOR ****************************************************************/
 struct entries * entries_new(void)
@@ -151,6 +166,12 @@ struct entries * entries_new(void)
     this->size = ALLOC_SIZE;
 
     return this;
+}
+
+void entries_delete_copy(struct entries *this)
+{
+    free(this->entries);
+    free(this);
 }
 
 void entries_delete(struct entries *this)

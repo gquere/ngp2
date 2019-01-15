@@ -37,9 +37,11 @@ void entries_toggle_visited(const struct entries *this, const uint32_t index);
 
 /* ADD ************************************************************************/
 void entries_add(struct entries *this, const uint32_t line, const char *data);
+void entries_copy(struct entries *this, struct entry *copy);
 
 /* CONSTRUCTOR ****************************************************************/
 struct entries * entries_new(void);
+void entries_delete_copy(struct entries *this);
 void entries_delete(struct entries *this);
 
 #endif /* NGP_ENTRIES_H */

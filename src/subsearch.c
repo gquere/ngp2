@@ -31,12 +31,12 @@ void subsearch_search(struct search *this)
         if (!!strstr(parent_entries_data, this->pattern) ^ this->invert_search) {
             /* check if file has been added yet */
             if (first) {
-                entries_add(this->entries, 0, entries_get_data(parent_entries, file_index));
+                entries_copy(this->entries, entries_get_entry(parent_entries, file_index));
                 first = 0;
             }
 
             /* add line */
-            entries_add(this->entries, parent_entries_line, parent_entries_data);
+            entries_copy(this->entries, entries_get_entry(parent_entries, i));
         }
     }
 }
@@ -59,7 +59,7 @@ struct search * subsearch_new(struct search *parent, char *pattern,
 
 void subsearch_delete(struct search *this)
 {
-    entries_delete(this->entries);
+    entries_delete_copy(this->entries);
 
     free(this->pattern);
     free(this);
