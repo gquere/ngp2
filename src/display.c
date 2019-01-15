@@ -33,19 +33,26 @@ struct display {
     int32_t cursor;     // position of cursor on screen (0->LINES)
 
     struct display *parent;
+	WINDOW *search_window;
+    int search_window_lines;
+    int search_window_columns;
+	WINDOW *status_window;
+    int status_window_lines;
+    int status_window_columns;
+
+    uint8_t redraw;
+    uint32_t nb_entries_on_screen;
 };
 
 extern struct search *current_search;
 
 
 /* NCURSES ENVIRONMENT ********************************************************/
-static void ncurses_init(void)
+void ncurses_init(void)
 {
     initscr();
     cbreak();
     noecho();
-    keypad(stdscr, TRUE);
-    nodelay(stdscr, TRUE);
     start_color();
     use_default_colors();
     init_pair(normal, -1, -1);
@@ -56,40 +63,50 @@ static void ncurses_init(void)
     curs_set(0);
 }
 
-static void ncurses_stop(void)
+void ncurses_stop(void)
 {
     endwin();
 }
 
-static void ncurses_clear_screen(void)
+void ncurses_resize(struct display *this)
 {
-    clear();
-    refresh();
+    endwin();
+//    refresh();
+    getmaxyx(this->search_window, this->search_window_lines, this->search_window_columns);
+    getmaxyx(this->status_window, this->status_window_lines, this->status_window_columns);
 }
 
 
 /* PRINT STATUS ***************************************************************/
-static void display_status(const struct search *search, const struct entries *entries)
+static void display_status(struct display *this,
+                           const struct search *search,
+                           const struct entries *entries)
 {
-    char *rollingwheel[4] = {"/", "-", "\\", "|"};
+    char rollingwheel[4] = {'/', '-', '\\', '|'};
     static int i = 0;
 
-    attron(COLOR_PAIR(normal));
-
+    char roll_char;
     if (search_get_status(search)) {
-        mvaddstr(0, COLS - 1, rollingwheel[++i%4]);
+        roll_char = rollingwheel[++i%4];
     } else {
-        mvaddstr(0, COLS - 5, "Done.");
+        roll_char = '.';
     }
 
-    char nbhits[15];
-    snprintf(nbhits, 15, "Hits: %d", entries_get_nb_lines(entries));
-    mvaddstr(1, COLS - (int)(strchr(nbhits, '\0') - nbhits), nbhits);
+    /* build line to display */
+    char buf[1024];
+    snprintf(buf, 1024, "%d %c", entries_get_nb_lines(entries), roll_char);
+
+    /* get window size to get the number of columns y */
+    int x, y;
+    getmaxyx(this->status_window, x, y);
+    (void) x;
+    mvwaddstr(this->status_window, 0, y - strlen(buf), buf);
 }
 
 
 /* PRINT DATA *****************************************************************/
-static void print_line_contents(const uint32_t y_position,
+static void print_line_contents(const struct display *this,
+                                const uint32_t y_position,
                                 const uint32_t line_number,
                                 char *line_contents)
 {
@@ -97,13 +114,14 @@ static void print_line_contents(const uint32_t y_position,
     size_t line_str_len = snprintf(line_str, 10, "%d:", line_number);
 
     /* print the line number */
-    attron(COLOR_PAIR(yellow));
-    mvprintw(y_position, 0, "%s", line_str);
+    wattron(this->search_window, COLOR_PAIR(yellow));
+    mvwprintw(this->search_window, y_position, 0, "%s", line_str);
 
     /* first, print whole line contents */
-    attron(COLOR_PAIR(normal));
-    mvprintw(y_position, line_str_len, "%.*s", COLS - line_str_len, line_contents);
+    wattron(this->search_window, COLOR_PAIR(normal));
+    mvwprintw(this->search_window, y_position, line_str_len, "%.*s", this->search_window_columns - line_str_len, line_contents);
 
+#if 0
     char *pattern = search_get_pattern(current_search);
 
     /* next, color all patterns on line */
@@ -115,7 +133,7 @@ static void print_line_contents(const uint32_t y_position,
     while ((pattern_position = strcasestr(ptr, pattern))) {
 
         /* return if pattern is off-screen */
-        if (pattern_position - line_contents > COLS) {
+        if (pattern_position - line_contents > this->search_window_columns) {
             break;
         }
 
@@ -131,17 +149,18 @@ static void print_line_contents(const uint32_t y_position,
         attron(COLOR_PAIR(normal));
         ptr += strlen(pattern);
     }
+#endif
 }
 
 static void print_line(struct display *this,
                        const uint32_t y_position, uint32_t line, char *data)
 {
     if (y_position == (uint32_t) this->cursor) {
-        attron(A_REVERSE);
-        print_line_contents(y_position, line, data);
-        attroff(A_REVERSE);
+        wattron(this->search_window, A_REVERSE);
+        print_line_contents(this, y_position, line, data);
+        wattroff(this->search_window, A_REVERSE);
     } else {
-        print_line_contents(y_position, line, data);
+        print_line_contents(this, y_position, line, data);
     }
 }
 
@@ -149,10 +168,10 @@ static void print_file(struct display *this, const uint32_t y_position, char *fi
 {
     (void) this;
 
-    attron(COLOR_PAIR(green));
-    attron(A_BOLD);
-    mvprintw(y_position, 0, "%.*s", COLS, file);
-    attroff(A_BOLD);
+    wattron(this->search_window, COLOR_PAIR(green));
+    wattron(this->search_window, A_BOLD);
+    mvwprintw(this->search_window, y_position, 0, "%.*s", this->status_window_columns, file);
+    wattroff(this->search_window, A_BOLD);
 }
 
 static void display_entry(struct display *this, const struct entry *entry, const uint32_t y_position)
@@ -168,13 +187,18 @@ static void display_entries(struct display *this, const struct entries *entries)
 {
     uint32_t i = 0;
 
-    for (i = this->index; i < this->index + LINES; i++) {
+    for (i = this->index; i < this->index + this->search_window_lines; i++) {
 
         if (entries_get_data(entries, i) == NULL) {
             break;
         }
 
         display_entry(this, entries_get_entry(entries, i), i - this->index);
+    }
+
+    if (i > this->nb_entries_on_screen) {
+        this->redraw = 1;
+        this->nb_entries_on_screen = i;
     }
 }
 
@@ -185,15 +209,14 @@ static void page_down(struct display *this, const struct entries *entries)
     uint32_t nb_entries = entries_get_nb_entries(entries);
 
     /* if there isn't a next page, move to the last entry on this page */
-    if (this->index + LINES >= nb_entries) {
+    if (this->index + this->search_window_lines >= nb_entries) {
         this->cursor = nb_entries - this->index - 1;
         return;
     }
 
-    clear();
-    refresh();
+    wclear(this->search_window);
 
-    this->index += LINES;
+    this->index += this->search_window_lines;
     this->cursor = 0;
 
     if (entries_is_file(entries, this->index + this->cursor)) {
@@ -210,11 +233,10 @@ static void page_up(struct display *this, const struct entries *entries)
         return;
     }
 
-    clear();
-    refresh();
+    wclear(this->search_window);
 
-    this->cursor = LINES - 1;
-    this->index -= LINES;
+    this->cursor = this->search_window_lines - 1;
+    this->index -= this->search_window_lines;
 
     if (entries_is_file(entries, this->index + this->cursor)) {
         this->cursor -= 1;
@@ -229,7 +251,7 @@ static void key_down(struct display *this, const struct entries *entries)
         return;
     }
 
-    if (this->cursor == LINES - 1) {
+    if (this->cursor == this->search_window_lines - 1) {
         page_down(this, entries);
         return;
     }
@@ -241,7 +263,7 @@ static void key_down(struct display *this, const struct entries *entries)
         this->cursor++;
     }
 
-    if (this->cursor > LINES - 1) {
+    if (this->cursor > this->search_window_lines - 1) {
         page_down(this, entries);
         return;
     }
@@ -271,16 +293,20 @@ static void key_up(struct display *this, const struct entries *entries)
 /* GOTO LINE NUMBER ***********************************************************/
 static void goto_home(struct display *this)
 {
+    wclear(this->search_window);
+
     this->index = 0;
     this->cursor = 1;
 }
 
 static void goto_end(struct display *this, const struct entries *entries)
 {
+    wclear(this->search_window);
+
     uint32_t nb_entries = entries_get_nb_entries(entries);
 
-    this->index = (nb_entries / LINES) * LINES;
-    this->cursor = nb_entries % LINES - 1;
+    this->index = (nb_entries / this->search_window_lines) * this->search_window_lines;
+    this->cursor = nb_entries % this->search_window_lines - 1;
 }
 
 
@@ -291,17 +317,17 @@ static void goto_end(struct display *this, const struct entries *entries)
  *
  * @return  New pattern
  */
-static char * subsearch_window(const uint8_t invert)
+static char * subsearch_window(struct display *this, const uint8_t invert)
 {
 	WINDOW	*searchw;
 	int	j = 0, car;
 
     char *search = calloc(4096, sizeof(char));
 
-	searchw = newwin(3, 50, (LINES-3)/2 , (COLS-50)/2);
+	searchw = newwin(3, 50, (this->search_window_lines-3)/2 , (this->search_window_columns-50)/2);
 	box(searchw, 0,0);
+	//refresh();
 	wrefresh(searchw);
-	refresh();
 
     char *include = "To include: ";
     char *exclude = "To exclude: ";
@@ -338,7 +364,6 @@ static char * subsearch_window(const uint8_t invert)
 	}
 	search[j] = 0;
 	delwin(searchw);
-    ncurses_clear_screen();
 
     if (j <= 0) {
         free(search);
@@ -356,9 +381,9 @@ void display_loop(struct display *this, const struct search *search)
     int ch = 0;
     struct entries *entries = search_get_entries(search);
 
-    ncurses_init();
+    //ncurses_init();
 
-    while ((ch = getch()) && run) {
+    while ((ch = wgetch(this->search_window)) && run) {
         switch(ch) {
 
         case KEY_NPAGE:
@@ -378,7 +403,7 @@ void display_loop(struct display *this, const struct search *search)
             break;
 
         case KEY_RESIZE:
-            ncurses_clear_screen();
+            ncurses_resize(this);
             break;
 
         case QUIT: {
@@ -388,7 +413,7 @@ void display_loop(struct display *this, const struct search *search)
                 current_search = parent_search;
                 entries = search_get_entries(current_search);
                 this = this->parent;
-                ncurses_clear_screen();
+                wclear(this->search_window);
             } else {
                 run = 0;
             }
@@ -403,9 +428,9 @@ void display_loop(struct display *this, const struct search *search)
 
         /* subsearch include */
         case '/': {
-            char *sub_pattern = subsearch_window(0);
+            char *sub_pattern = subsearch_window(this, 0);
             if (sub_pattern == NULL) {
-                ncurses_clear_screen();
+                wclear(this->search_window);
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 0);
@@ -418,15 +443,14 @@ void display_loop(struct display *this, const struct search *search)
             subdisplay->parent = this;
             this = subdisplay;
 
-            ncurses_clear_screen();
             break;
         }
 
         /* subsearch exclude */
         case '\\': {    //TODO: clean this up
-            char *sub_pattern = subsearch_window(1);
+            char *sub_pattern = subsearch_window(this, 1);
             if (sub_pattern == NULL) {
-                ncurses_clear_screen();
+                wclear(this->search_window);
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 1);
@@ -439,37 +463,38 @@ void display_loop(struct display *this, const struct search *search)
             subdisplay->parent = this;
             this = subdisplay;
 
-            ncurses_clear_screen();
             break;
         }
 
         /* goto line number */
         case KEY_HOME:
             goto_home(this);
-            ncurses_clear_screen();
             break;
 
         case KEY_END:
             goto_end(this, entries);
-            ncurses_clear_screen();
             break;
 
         default:
             break;
         }
 
-        usleep(10000);
-        refresh();
         display_entries(this, entries);
-        display_status(search, entries);
+        if (this->redraw) {
+            wrefresh(this->search_window);
+            this->redraw = 0;
+        }
+
+        display_status(this, search, entries);
+        wrefresh(this->status_window);
+        usleep(10000);
 
         /* check if search thread has ended without results */
-        if (!search_get_status(search) && entries->nb_entries == 0 && !search_get_parent(current_search)) {
+        if (!search_get_status(search) && entries->nb_entries == 0 &&
+            !search_get_parent(current_search)) {
             run = 0;
         }
     }
-
-    ncurses_stop();
 }
 
 
@@ -477,11 +502,18 @@ void display_loop(struct display *this, const struct search *search)
 struct display * display_new(void)
 {
     struct display *this = calloc(1, sizeof(struct display));
+    this->search_window = newwin(LINES - 1, COLS, 0, 0);
+    keypad(this->search_window, TRUE);
+    nodelay(this->search_window, TRUE);
+    this->status_window = newwin(1, COLS, LINES - 1, 0);
+    ncurses_resize(this);
 
     return this;
 }
 
 void display_delete(struct display *this)
 {
+    delwin(this->status_window);
+    delwin(this->search_window);
     free(this);
 }

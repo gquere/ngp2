@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include <pthread.h>
+#include <ncurses.h>
 
 #include "config.h"
 #include "search.h"
@@ -54,9 +55,11 @@ int main(int argc, char *argv[])
     pthread_create(&search_thread, NULL, search_thread_start, (void *) search);
 
 #ifndef _PERFORMANCE_TEST
+    ncurses_init();
     struct display *display = display_new();
     display_loop(display, search);
     display_delete(display);
+    ncurses_stop();
     search_stop(search);
 #endif
 
