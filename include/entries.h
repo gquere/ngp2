@@ -9,6 +9,7 @@
 struct entry {
     uint32_t line;          /* line = 0 is a file */
     char *data;             /* data to hold : file name or line contents */
+    uint8_t visited;        /* if the entry was opened by the user during the session */
 };
 
 struct entries {
@@ -30,6 +31,8 @@ char * entries_get_data(const struct entries *this, const uint32_t index);
 uint32_t entries_get_nb_lines(const struct entries *this);
 uint32_t entries_get_nb_entries(const struct entries *this);
 struct entry * entries_get_entry(const struct entries *this, const uint32_t index);
+void entries_set_visited(const struct entries *this, const uint32_t index);
+uint8_t entries_get_visited(const struct entries *this, const uint32_t index);
 
 /* ADD ************************************************************************/
 void entries_add(struct entries *this, const uint32_t line, const char *data);

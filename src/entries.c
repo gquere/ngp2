@@ -79,6 +79,22 @@ struct entry * entries_get_entry(const struct entries *this, const uint32_t inde
     return entry;
 }
 
+void entries_set_visited(const struct entries *this, const uint32_t index)
+{
+    pthread_mutex_lock(&entries_mutex);
+    this->entries[index].visited = 1;
+    pthread_mutex_unlock(&entries_mutex);
+}
+
+uint8_t entries_get_visited(const struct entries *this, const uint32_t index)
+{
+    pthread_mutex_lock(&entries_mutex);
+    uint8_t visited = this->entries[index].visited;
+    pthread_mutex_unlock(&entries_mutex);
+
+    return visited;
+}
+
 
 /* ADD ************************************************************************/
 static void check_alloc(struct entries *this)

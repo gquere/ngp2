@@ -185,7 +185,8 @@ static void colorize_normal_patterns(char *line_contents)
 
 static void print_line_contents(const uint32_t y_position,
                                 const uint32_t line_number,
-                                char *line_contents)
+                                char *line_contents,
+                                const uint8_t visited)
 {
     char line_str[10] = {0};
     size_t line_str_len = snprintf(line_str, 10, "%d:", line_number);
@@ -195,7 +196,12 @@ static void print_line_contents(const uint32_t y_position,
     mvprintw(y_position, 0, "%s", line_str);
 
     /* first, print whole line contents */
-    attron(COLOR_PAIR(normal));
+    if (visited) {
+        attron(A_REVERSE);
+        attron(COLOR_PAIR(magenta));
+    } else {
+        attron(COLOR_PAIR(normal));
+    }
     mvprintw(y_position, line_str_len, "%.*s", COLS - line_str_len, line_contents);
     move(y_position, line_str_len); // reset cursor to beginning of line
 
@@ -205,17 +211,24 @@ static void print_line_contents(const uint32_t y_position,
     } else {
         colorize_normal_patterns(line_contents);
     }
+
+    /* reset colors if need be */
+    if (visited) {
+        attron(COLOR_PAIR(normal));
+        attroff(A_REVERSE);
+    }
 }
 
 static void print_line(struct display *this,
-                       const uint32_t y_position, uint32_t line, char *data)
+                       const uint32_t y_position, uint32_t line, char *data,
+                       const uint8_t visited)
 {
     if (y_position == (uint32_t) this->cursor) {
         attron(A_REVERSE);
-        print_line_contents(y_position, line, data);
+        print_line_contents(y_position, line, data, 0);
         attroff(A_REVERSE);
     } else {
-        print_line_contents(y_position, line, data);
+        print_line_contents(y_position, line, data, visited);
     }
 }
 
@@ -234,7 +247,7 @@ static void display_entry(struct display *this, const struct entry *entry, const
     if (entry->line == 0) {
         print_file(this, y_position, entry->data);
     } else {
-        print_line(this, y_position, entry->line, entry->data);
+        print_line(this, y_position, entry->line, entry->data, entry->visited);
     }
 }
 

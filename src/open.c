@@ -137,6 +137,7 @@ void open_entry(const struct entries *entries, const uint32_t index)
     snprintf(command, sizeof(command), vim_cmdline,
              file, sanitized_pattern, line);
     system(command);
+    entries_set_visited(entries, index);
 
     free(sanitized_pattern);
 }
