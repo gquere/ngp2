@@ -33,6 +33,7 @@ uint32_t entries_get_nb_entries(const struct entries *this);
 struct entry * entries_get_entry(const struct entries *this, const uint32_t index);
 void entries_set_visited(const struct entries *this, const uint32_t index);
 uint8_t entries_get_visited(const struct entries *this, const uint32_t index);
+void entries_toggle_visited(const struct entries *this, const uint32_t index);
 
 /* ADD ************************************************************************/
 void entries_add(struct entries *this, const uint32_t line, const char *data);

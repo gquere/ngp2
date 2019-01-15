@@ -95,6 +95,13 @@ uint8_t entries_get_visited(const struct entries *this, const uint32_t index)
     return visited;
 }
 
+void entries_toggle_visited(const struct entries *this, const uint32_t index)
+{
+    pthread_mutex_lock(&entries_mutex);
+    this->entries[index].visited ^= 1;
+    pthread_mutex_unlock(&entries_mutex);
+}
+
 
 /* ADD ************************************************************************/
 static void check_alloc(struct entries *this)

@@ -146,7 +146,7 @@ static void colorize_regex_pattern(char *line_contents)
 /**
  * Find and colorize normal patterns.
  */
-static void colorize_normal_patterns(char *line_contents)
+static void colorize_normal_patterns(char *line_contents, const uint8_t visited)
 {
     char *ptr = line_contents;
 
@@ -178,7 +178,11 @@ static void colorize_normal_patterns(char *line_contents)
         /* print pattern then move ptr by pattern size */
         attron(COLOR_PAIR(red));
         printw("%s", pattern);
-        attron(COLOR_PAIR(normal));
+        if (visited) {
+            attron(COLOR_PAIR(magenta));
+        } else {
+            attron(COLOR_PAIR(normal));
+        }
         ptr += strlen(pattern);
     }
 }
@@ -209,7 +213,7 @@ static void print_line_contents(const uint32_t y_position,
     if (search_get_regex(current_search)) {
         colorize_regex_pattern(line_contents);
     } else {
-        colorize_normal_patterns(line_contents);
+        colorize_normal_patterns(line_contents, visited);
     }
 
     /* reset colors if need be */
@@ -540,6 +544,10 @@ void display_loop(struct display *this, const struct search *search)
         case KEY_END:
             goto_end(this, entries);
             ncurses_clear_screen();
+            break;
+
+        case ' ':
+            entries_toggle_visited(entries, this->index + this->cursor);
             break;
 
         default:
