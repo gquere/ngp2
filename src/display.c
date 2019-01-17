@@ -34,6 +34,8 @@ struct display {
 
     struct display *parent;
     char *pattern;
+
+    int display_vertical_size;
 };
 
 extern struct search *current_search;
@@ -471,9 +473,17 @@ void display_loop(struct display *this, const struct search *search)
             sleep_time = 100;
             break;
 
-        case KEY_RESIZE:
+        case KEY_RESIZE: {
+            /* realign indexes with new vertical size so that the first entry
+               is always at the same place in the display */
+            uint32_t current_position = this->index + this->cursor;
+
+            this->display_vertical_size = LINES;
+            this->cursor = current_position % (this->display_vertical_size - 1);
+            this->index = current_position - this->cursor;
             ncurses_clear_screen();
             break;
+        }
 
         case QUIT: {
             struct search *parent_search = search_get_parent(current_search);
@@ -555,9 +565,9 @@ void display_loop(struct display *this, const struct search *search)
         }
 
         usleep(sleep_time);
-        refresh();
         display_entries(this, entries);
         display_bar(this, search, entries);
+        refresh();
 
         /* check if main search thread has ended without results */
         if (!search_get_parent(current_search) &&
@@ -591,6 +601,8 @@ struct display * display_new(struct display *parent, char *pattern)
     } else {
         this->pattern = strdup(pattern);
     }
+
+    this->display_vertical_size = LINES;
 
     return this;
 }
