@@ -91,7 +91,6 @@ static uint8_t lookup_file(struct search *this, const char *file)
 
     int f = open(file, O_RDONLY);
     if (f == -1) {
-        failure_add(file, OPEN);
         return EXIT_FAILURE;
     }
 
@@ -133,7 +132,6 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
 {
     DIR *dir_stream = opendir(directory);
     if (dir_stream == NULL) {
-        //printf("Failed opening directory %s\n", directory);
         return EXIT_FAILURE;
     }
 
