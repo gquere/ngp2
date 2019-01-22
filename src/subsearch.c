@@ -7,8 +7,8 @@
 #include "search.h"
 
 
-/* API ************************************************************************/
-void subsearch_search(struct search *this)
+/* SUBSEARCH THREAD ***********************************************************/
+static void subsearch_search(struct search *this)
 {
     struct entries *parent_entries = search_get_entries(this->parent);
 

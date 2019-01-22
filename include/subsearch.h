@@ -3,9 +3,6 @@
 
 #include "search.h"
 
-/* API ************************************************************************/
-void subsearch_search(struct search *this);
-
 /* CONSTRUCTOR ****************************************************************/
 struct search * subsearch_new(struct search *parent, char *pattern,
                               const uint8_t invert_search);
