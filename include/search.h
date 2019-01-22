@@ -28,6 +28,8 @@ struct search {
     /* subsearch */
     struct search *subsearch;
     struct search *parent;
+    pthread_t subsearch_search_thread;
+    uint32_t parent_previous_nb_entries;
 };
 
 

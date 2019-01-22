@@ -452,7 +452,7 @@ void display_loop(struct display *this, const struct search *search)
     ncurses_init();
 
     while ((ch = getch()) && run) {
-        int sleep_time = 10000;
+        int sleep_time = 100000;
         switch(ch) {
 
         case KEY_NPAGE:
@@ -513,7 +513,7 @@ void display_loop(struct display *this, const struct search *search)
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 0);
-            subsearch_search(subsearch);
+            //subsearch_search(subsearch);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
@@ -533,7 +533,7 @@ void display_loop(struct display *this, const struct search *search)
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 1);
-            subsearch_search(subsearch);
+            //subsearch_search(subsearch);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
@@ -566,8 +566,8 @@ void display_loop(struct display *this, const struct search *search)
 
         usleep(sleep_time);
         display_entries(this, entries);
+        //refresh();
         display_bar(this, search, entries);
-        refresh();
 
         /* check if main search thread has ended without results */
         if (!search_get_parent(current_search) &&

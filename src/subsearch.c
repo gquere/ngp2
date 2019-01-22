@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "subsearch.h"
 #include "entries.h"
@@ -13,11 +14,16 @@ void subsearch_search(struct search *this)
 
     uint32_t parent_nb_entries = entries_get_nb_entries(parent_entries);
 
+    /* check if there's new data */
+    if (parent_nb_entries == this->parent_previous_nb_entries) {
+        return;
+    }
+
     uint32_t i = 0;
     uint8_t first = 1;
     uint32_t file_index = 0;
 
-    for (i = 0; i < parent_nb_entries; i++) {
+    for (i = this->parent_previous_nb_entries; i < parent_nb_entries; i++) {
         uint32_t parent_entries_line = entries_get_line(parent_entries, i);
 
         /* if it's a file, store its index in case there's a line match later */
@@ -39,6 +45,19 @@ void subsearch_search(struct search *this)
             entries_copy(this->entries, entries_get_entry(parent_entries, i));
         }
     }
+    this->parent_previous_nb_entries = parent_nb_entries;
+}
+
+void * subsearch_search_thread_start(void *context)
+{
+    struct search *this = context;
+
+    while (!this->stop) {
+        subsearch_search(this);
+        sleep(0.5);
+    }
+
+    return NULL;
 }
 
 
@@ -54,11 +73,15 @@ struct search * subsearch_new(struct search *parent, char *pattern,
 
     this->entries = entries_new();
 
+    pthread_create(&this->subsearch_search_thread, NULL, subsearch_search_thread_start, (void *) this);
+
     return this;
 }
 
 void subsearch_delete(struct search *this)
 {
+    this->stop = 1;
+    pthread_join(this->subsearch_search_thread, NULL);
     entries_delete_copy(this->entries);
 
     free(this->pattern);
