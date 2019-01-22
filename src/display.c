@@ -284,9 +284,6 @@ static void page_down(struct display *this, const struct entries *entries)
         return;
     }
 
-    clear();
-    refresh();
-
     this->index += (LINES - 1);
     this->cursor = 0;
 
@@ -294,6 +291,7 @@ static void page_down(struct display *this, const struct entries *entries)
         this->cursor += 1;
     }
 
+    clear();
     display_entries(this, entries);
 }
 
@@ -304,9 +302,6 @@ static void page_up(struct display *this, const struct entries *entries)
         return;
     }
 
-    clear();
-    refresh();
-
     this->cursor = (LINES - 1) - 1;
     this->index -= (LINES - 1);
 
@@ -314,6 +309,7 @@ static void page_up(struct display *this, const struct entries *entries)
         this->cursor -= 1;
     }
 
+    clear();
     display_entries(this, entries);
 }
 
@@ -367,6 +363,7 @@ static void goto_home(struct display *this)
 {
     this->index = 0;
     this->cursor = 1;
+    clear();
 }
 
 static void goto_end(struct display *this, const struct entries *entries)
@@ -375,6 +372,7 @@ static void goto_end(struct display *this, const struct entries *entries)
 
     this->index = (nb_entries / (LINES - 1)) * (LINES - 1);
     this->cursor = nb_entries % (LINES - 1) - 1;
+    clear();
 }
 
 
