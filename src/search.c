@@ -15,6 +15,7 @@
 #include "search.h"
 #include "entries.h"
 #include "config.h"
+#include "failure.h"
 #include "file_utils.h"
 #include "search_algorithm.h"
 
@@ -90,13 +91,13 @@ static uint8_t lookup_file(struct search *this, const char *file)
 
     int f = open(file, O_RDONLY);
     if (f == -1) {
-        //printf("Failed opening file %s\n", file);
+        failure_add(file, OPEN);
         return EXIT_FAILURE;
     }
 
     struct stat sb;
     if (fstat(f, &sb) < 0) {
-        //printf("Failed stat on file %s\n", file);
+        failure_add(file, STAT);
         close(f);
         return EXIT_FAILURE;
     }
@@ -109,7 +110,7 @@ static uint8_t lookup_file(struct search *this, const char *file)
 
     char *p = mmap(0, sb.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, f, 0);
     if (p == MAP_FAILED) {
-        //printf("Failed mapping file %s\n", file);
+        failure_add(file, MMAP);
         close(f);
         return EXIT_FAILURE;
     }
@@ -118,7 +119,6 @@ static uint8_t lookup_file(struct search *this, const char *file)
     parse_file_contents(this, file, p, sb.st_size);
 
     if (munmap(pp, sb.st_size) < 0) {
-        //printf("Failed unmapping file %s\n", file);
         close(f);
         return EXIT_FAILURE;
     }

@@ -7,6 +7,7 @@
 #include "search.h"
 #include "entries.h"
 #include "display.h"
+#include "failure.h"
 
 
 struct search *current_search = NULL;
@@ -71,6 +72,7 @@ int main(int argc, char *argv[])
     entries_delete(entries);
     search_delete(search);
     config_delete(config);
+    failure_display();
 
     return EXIT_SUCCESS;
 }
