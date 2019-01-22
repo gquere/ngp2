@@ -29,11 +29,12 @@ enum colors {
 };
 
 struct display {
+    /* positions of current session */
     uint32_t index;     // position of first entry to display in entries (0->nb_entries by increment of (LINES - 1))
     int32_t cursor;     // position of cursor on screen (0->(LINES - 1))
 
-    struct display *parent;
-    char *pattern;
+    struct display *parent_display;
+    char *patterns;     // patterns for the status bar
 
     int display_vertical_size;
 };
@@ -85,7 +86,7 @@ static void display_bar(struct display *this, const struct search *search, const
 
     /* build first part of status line that shows patterns */
     char *buf = calloc(COLS, sizeof(char));
-    snprintf(buf, COLS, "%s%*s", this->pattern, (int)(COLS - strlen(this->pattern)), "");
+    snprintf(buf, COLS, "%s%*s", this->patterns, (int)(COLS - strlen(this->patterns)), "");
 
     /* calculate percent of entries scrolled */
     int percent_completed = 0;
@@ -443,11 +444,11 @@ static char * subsearch_window(const uint8_t invert)
 
 
 /* API ************************************************************************/
-void display_loop(struct display *this, const struct search *search)
+void display_loop(struct display *this, const struct search *main_search)
 {
     uint8_t run = 1;
     int ch = 0;
-    struct entries *entries = search_get_entries(search);
+    struct entries *entries = search_get_entries(main_search);
 
     ncurses_init();
 
@@ -491,7 +492,7 @@ void display_loop(struct display *this, const struct search *search)
                 subsearch_delete(current_search);
                 current_search = parent_search;
                 entries = search_get_entries(current_search);
-                this = this->parent;
+                this = this->parent_display;
                 ncurses_clear_screen();
             } else {
                 run = 0;
@@ -513,7 +514,6 @@ void display_loop(struct display *this, const struct search *search)
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 0);
-            //subsearch_search(subsearch);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
@@ -533,7 +533,6 @@ void display_loop(struct display *this, const struct search *search)
                 break;
             }
             struct search *subsearch = subsearch_new(current_search, sub_pattern, 1);
-            //subsearch_search(subsearch);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
@@ -566,12 +565,11 @@ void display_loop(struct display *this, const struct search *search)
 
         usleep(sleep_time);
         display_entries(this, entries);
-        //refresh();
-        display_bar(this, search, entries);
+        display_bar(this, main_search, entries);
 
         /* check if main search thread has ended without results */
         if (!search_get_parent(current_search) &&
-            !search_get_status(search) && entries->nb_entries == 0) {
+            !search_get_status(main_search) && entries->nb_entries == 0) {
             run = 0;
         }
     }
@@ -581,14 +579,18 @@ void display_loop(struct display *this, const struct search *search)
 
 
 /* CONSTRUCTOR ****************************************************************/
-struct display * display_new(struct display *parent, char *pattern)
+/**
+ * Create an independant display.
+ * Argument pattern is used to build the bottom status bar showing all patterns.
+ */
+struct display * display_new(struct display *parent_display, char *pattern)
 {
     struct display *this = calloc(1, sizeof(struct display));
 
-    this->parent = parent;
-    if (this->parent) {
-        size_t length = strlen(this->parent->pattern) + 2 + strlen(pattern) + 1;
-        this->pattern = calloc(length, sizeof(char));
+    this->parent_display = parent_display;
+    if (this->parent_display) {
+        size_t length = strlen(this->parent_display->patterns) + 2 + strlen(pattern) + 1;
+        this->patterns = calloc(length, sizeof(char));
 
         char search_invert;
         if (search_get_invert(current_search)) {
@@ -597,9 +599,9 @@ struct display * display_new(struct display *parent, char *pattern)
             search_invert = '/';
         }
 
-        snprintf(this->pattern, length, "%s %c%s", this->parent->pattern, search_invert, pattern);
+        snprintf(this->patterns, length, "%s %c%s", this->parent_display->patterns, search_invert, pattern);
     } else {
-        this->pattern = strdup(pattern);
+        this->patterns = strdup(pattern);
     }
 
     this->display_vertical_size = LINES;
@@ -609,6 +611,6 @@ struct display * display_new(struct display *parent, char *pattern)
 
 void display_delete(struct display *this)
 {
-    free(this->pattern);
+    free(this->patterns);
     free(this);
 }
