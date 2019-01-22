@@ -474,6 +474,19 @@ void display_loop(struct display *this, const struct search *main_search)
             sleep_time = 0;
             break;
 
+        /* goto line number */
+        case KEY_HOME:
+            goto_home(this);
+            ncurses_clear_screen();
+            sleep_time = 0;
+            break;
+
+        case KEY_END:
+            goto_end(this, entries);
+            ncurses_clear_screen();
+            sleep_time = 0;
+            break;
+
         case KEY_RESIZE: {
             /* realign indexes with new vertical size so that the first entry
                is always at the same place in the display */
@@ -543,17 +556,6 @@ void display_loop(struct display *this, const struct search *main_search)
             ncurses_clear_screen();
             break;
         }
-
-        /* goto line number */
-        case KEY_HOME:
-            goto_home(this);
-            ncurses_clear_screen();
-            break;
-
-        case KEY_END:
-            goto_end(this, entries);
-            ncurses_clear_screen();
-            break;
 
         case ' ':
             entries_toggle_visited(entries, this->index + this->cursor);
