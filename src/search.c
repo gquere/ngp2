@@ -142,8 +142,13 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
             break;
         }
 
+        /* build subdirectories */
         char dir_entry_path[PATH_MAX];
-        snprintf(dir_entry_path, PATH_MAX, "%s/%s", directory, dir_entry->d_name);
+        if (directory[strlen(directory) - 1] == '/') {
+            snprintf(dir_entry_path, PATH_MAX, "%s%s", directory, dir_entry->d_name);
+        } else {
+            snprintf(dir_entry_path, PATH_MAX, "%s/%s", directory, dir_entry->d_name);
+        }
 
         if (dir_entry->d_type == DT_REG) {              // regular file
             lookup_file(this, dir_entry_path);
