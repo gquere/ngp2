@@ -27,6 +27,14 @@ struct failure_control failure_control = {0};
 
 void failure_add(const char *filename, const uint32_t error)
 {
+    /* ignore /proc /sym files */
+    if (strlen(filename) > 5 && !memcmp(filename, "/sys/", 5)) {
+        return;
+    }
+    if (strlen(filename) > 6 && !memcmp(filename, "/proc/", 6)) {
+        return;
+    }
+
     /* allocate new node for linked list */
     struct failure *new_failure = calloc(1, sizeof(struct failure));
     if (!new_failure) {
