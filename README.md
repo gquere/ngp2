@@ -17,16 +17,17 @@ Features
 
 - search for a pattern/a regexp in a folder or a file
 - by default, only source files are scanned, though a raw mode (-r) or special extensions may be specified (-t, -o)
-- by default, doesn't follow symlinks to files, override with -f
-- subsearch: search your search! (use '/' after the first results)
+- subsearches: search your search!
 
 
 Usage
 -----
 
-- use arrows and page up/down to navigate the results, or the vim keys
+- use arrows and page up/down or home/end to navigate the results
 - hit enter to open a result in your favorite editor
-- hit q to quit the current search or the program
+- hit q to quit the current subsearch or otherwise quit the program
+- use / for a subsearch to include new pattern
+- use \ for a subsearch to exclude new pattern
 
 Example:
 ```
