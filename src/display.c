@@ -458,20 +458,22 @@ void display_loop(struct display *this, const struct search *main_search)
 
         case KEY_NPAGE:
             page_down(this, entries);
+            sleep_time = 0;
             break;
 
         case KEY_PPAGE:
             page_up(this, entries);
+            sleep_time = 0;
             break;
 
         case KEY_DOWN:
             key_down(this, entries);
-            sleep_time = 100;
+            sleep_time = 0;
             break;
 
         case KEY_UP:
             key_up(this, entries);
-            sleep_time = 100;
+            sleep_time = 0;
             break;
 
         case KEY_RESIZE: {
