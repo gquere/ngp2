@@ -5,6 +5,8 @@
 
 #include "entries.h"
 #include "config.h"
+#include "tree.h"
+
 
 struct search {
     uint8_t status:1;
@@ -19,7 +21,7 @@ struct search {
     char *directory;
     char *pattern;
     char * (*parser)(const char *, const char *, int);
-    char *file_extensions;
+    struct tree *file_extensions_tree;
     regex_t *regex;
 
     /* storage */

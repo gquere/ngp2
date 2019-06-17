@@ -18,6 +18,7 @@
 #include "failure.h"
 #include "file_utils.h"
 #include "search_algorithm.h"
+#include "tree.h"
 
 
 extern struct search *current_search;
@@ -85,7 +86,7 @@ static uint8_t lookup_file(struct search *this, const char *file)
 {
     /* check file extension */
     if (!this->raw_search &&
-        !file_utils_check_extension(file, this->file_extensions)) {
+        !file_utils_check_extension(file, this->file_extensions_tree)) {
         return EXIT_FAILURE;
     }
 
@@ -257,7 +258,7 @@ struct search * search_new(const char *directory, const char *pattern,
     this->case_insensitive = config->insensitive_search;
     this->raw_search = config->raw_search;
     this->regex_search = config->regex_search;
-    this->file_extensions = config->file_extensions;
+    this->file_extensions_tree = config->file_extensions_tree;
     this->follow_symlinks = config->follow_symlinks;
 
     if (config->insensitive_search) {

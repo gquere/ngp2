@@ -2,6 +2,7 @@
 #define NGP_CONFIG_H
 
 #include <stdint.h>
+#include "tree.h"
 
 struct config {
 
@@ -10,7 +11,7 @@ struct config {
     char *directory;
 
     /* search file types */
-    char *file_extensions;
+    struct tree *file_extensions_tree;
     uint8_t only_user_extensions:1;
 
     /* search parser type */

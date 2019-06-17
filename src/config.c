@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "config.h"
+#include "tree.h"
 
 
 /* UTILS **********************************************************************/
@@ -33,11 +34,20 @@ char * strcpycat(char *destination, const char *source)
 /* PARSING ********************************************************************/
 static uint8_t parse_config(struct config *this)
 {
-    char *extensions = ".c .h .cpp .py .S .pl .sh .php";    //TODO: get this from config file
-
-    if (!this->only_user_extensions) {
-        this->file_extensions = strcpycat(this->file_extensions, extensions);
+    /* don't add custom extensions if user requested -o */
+    if (this->only_user_extensions) {
+        return EXIT_SUCCESS;
     }
+
+    // TODO: get this from config file
+    tree_add_string(this->file_extensions_tree, "c");
+    tree_add_string(this->file_extensions_tree, "h");
+    tree_add_string(this->file_extensions_tree, "cpp");
+    tree_add_string(this->file_extensions_tree, "py");
+    tree_add_string(this->file_extensions_tree, "pl");
+    tree_add_string(this->file_extensions_tree, "sh");
+    tree_add_string(this->file_extensions_tree, "php");
+    tree_add_string(this->file_extensions_tree, "java");
 
     return EXIT_SUCCESS;
 }
@@ -66,11 +76,11 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 
         case 'o':
             this->only_user_extensions = 1;
-            this->file_extensions = strcpycat(this->file_extensions, optarg);
+            tree_add_string(this->file_extensions_tree, optarg);
             break;
 
         case 't':
-            this->file_extensions = strcpycat(this->file_extensions, optarg);
+            tree_add_string(this->file_extensions_tree, optarg);
             break;
 
         default:
@@ -100,6 +110,7 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 struct config * config_new(int argc, char *argv[])
 {
     struct config *this = calloc(1, sizeof(struct config));
+    this->file_extensions_tree = tree_new();
 
     if (parse_arguments(this, argc, argv) == EXIT_FAILURE) {
         printf("Failed parsing arguments\n");
@@ -118,8 +129,8 @@ struct config * config_new(int argc, char *argv[])
 
 void config_delete(struct config *this)
 {
+    tree_delete(this->file_extensions_tree);
     free(this->pattern);
     free(this->directory);
-    free(this->file_extensions);
     free(this);
 }

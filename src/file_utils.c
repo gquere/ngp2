@@ -4,6 +4,7 @@
 #include <sys/types.h>
 
 #include "file_utils.h"
+#include "tree.h"
 
 
 /* FILE UTILS *****************************************************************/
@@ -55,7 +56,7 @@ uint8_t file_utils_is_symlink(const char *path)
  * Checks if a file is in the list of extensions
  * Returns 1 if it is, 0 if it isn't.
  */
-uint8_t file_utils_check_extension(const char *file_name, const char *extension_list)
+uint8_t file_utils_check_extension(const char *file_name, const struct tree *file_extensions_tree)
 {
     char *file_extension;
 
@@ -63,7 +64,7 @@ uint8_t file_utils_check_extension(const char *file_name, const char *extension_
         return 0;
     }
 
-    if (strstr(extension_list, file_extension)) {
+    if (is_string_in_tree(file_extensions_tree, file_extension + 1)) {
         return 1;
     }
 
