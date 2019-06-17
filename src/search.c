@@ -136,6 +136,15 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
         return EXIT_FAILURE;
     }
 
+    /* reusing the same buffer nets a considerable speedup in source searches */
+    char dir_entry_path[PATH_MAX];
+    size_t base_directory_name_len = strlen(directory);
+    memcpy(dir_entry_path, directory, base_directory_name_len);
+    if (directory[base_directory_name_len - 1] != '/') {
+        dir_entry_path[base_directory_name_len] = '/';
+        base_directory_name_len += 1;
+    }
+
     while (!this->stop) {
 
         struct dirent *dir_entry = readdir(dir_stream);
@@ -143,13 +152,9 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
             break;
         }
 
-        /* build subdirectories */
-        char dir_entry_path[PATH_MAX];
-        if (directory[strlen(directory) - 1] == '/') {
-            snprintf(dir_entry_path, PATH_MAX, "%s%s", directory, dir_entry->d_name);
-        } else {
-            snprintf(dir_entry_path, PATH_MAX, "%s/%s", directory, dir_entry->d_name);
-        }
+        /* build subdirectory path */
+        memcpy(&dir_entry_path[base_directory_name_len], dir_entry->d_name, strlen(dir_entry->d_name));
+        dir_entry_path[base_directory_name_len + strlen(dir_entry->d_name)] = 0;
 
         if (dir_entry->d_type == DT_REG) {              // regular file
             lookup_file(this, dir_entry_path);
