@@ -72,6 +72,26 @@ static void ncurses_clear_screen(void)
 }
 
 
+/* PRINT SEARCH TO FILE *******************************************************/
+static void save_search_output(const struct entries *entries)
+{
+    uint32_t nb_entries = entries_get_nb_entries(entries);
+
+    FILE *output = fopen("ngp.out", "w+");
+    if (!output) {
+        return;
+    }
+
+    uint32_t i = 0;
+    for (i = 0; i < nb_entries; i++) {
+        char *data = entries_get_data(entries, i);
+        fprintf(output, "%s\n", data);
+    }
+
+    fclose(output);
+}
+
+
 /* PRINT STATUS ***************************************************************/
 static void display_bar(struct display *this, const struct search *search, const struct entries *entries)
 {
@@ -559,6 +579,10 @@ void display_loop(struct display *this, const struct search *main_search)
 
         case ' ':
             entries_toggle_visited(entries, this->index + this->cursor);
+            break;
+
+        case 'p':
+            save_search_output(entries);
             break;
 
         default:
