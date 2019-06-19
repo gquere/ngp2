@@ -70,12 +70,3 @@ uint8_t file_utils_check_extension(const char *file_name, const struct tree *fil
 
     return 0;
 }
-
-
-uint8_t file_utils_is_dir_special(const char *directory_name)
-{
-    return !(strcmp(directory_name, ".") &&
-             strcmp(directory_name, "..") &&
-             strcmp(directory_name, ".git") &&
-             strcmp(directory_name, ".svn"));
-}

@@ -22,6 +22,7 @@ struct search {
     char *pattern;
     char * (*parser)(const char *, const char *, int);
     struct tree *file_extensions_tree;
+    struct tree *dir_exclusion_tree;
     regex_t *regex;
 
     /* storage */

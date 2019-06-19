@@ -3,8 +3,8 @@
 
 struct leaf
 {
-    struct leaf * leaves[26];
-    int terminate;  // set if a word finishes on the leaf
+    struct leaf * leaves[256];  // ascii alphabet
+    int terminate;              // set if a word finishes on the leaf
 };
 
 struct tree
@@ -15,6 +15,7 @@ struct tree
 
 /* API ************************************************************************/
 uint8_t is_string_in_tree(const struct tree *this, const char *string);
+uint8_t is_string_in_tree_size(const struct tree *this, const char *string, const size_t string_len);
 void tree_add_string(struct tree *this, const char *string);
 
 /* CONTRUCTOR *****************************************************************/

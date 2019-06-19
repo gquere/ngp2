@@ -151,17 +151,21 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
         if (dir_entry == NULL) {
             break;
         }
+        char *directory_name = dir_entry->d_name;
+        size_t directory_name_len = strlen(directory_name);
 
         /* build subdirectory path */
-        memcpy(&dir_entry_path[base_directory_name_len], dir_entry->d_name, strlen(dir_entry->d_name));
-        dir_entry_path[base_directory_name_len + strlen(dir_entry->d_name)] = 0;
+        memcpy(&dir_entry_path[base_directory_name_len], directory_name, directory_name_len);
+        dir_entry_path[base_directory_name_len + directory_name_len] = 0;
 
         if (dir_entry->d_type == DT_REG) {              // regular file
             lookup_file(this, dir_entry_path);
         } else if (dir_entry->d_type == DT_DIR) {       // folder
-            if (!file_utils_is_dir_special(dir_entry->d_name)) {
-                lookup_directory(this, dir_entry_path);
+            /* exclude special directories */
+            if (is_string_in_tree_size(this->dir_exclusion_tree, directory_name, directory_name_len)) {
+                continue;
             }
+            lookup_directory(this, dir_entry_path);
         } else if (dir_entry->d_type&DT_LNK) {          // symlink
             /* default : ignore symlinks */
             if (this->follow_symlinks) {
@@ -264,6 +268,7 @@ struct search * search_new(const char *directory, const char *pattern,
     this->raw_search = config->raw_search;
     this->regex_search = config->regex_search;
     this->file_extensions_tree = config->file_extensions_tree;
+    this->dir_exclusion_tree = config->dir_exclusion_tree;
     this->follow_symlinks = config->follow_symlinks;
 
     if (config->insensitive_search) {

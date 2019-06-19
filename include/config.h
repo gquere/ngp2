@@ -14,6 +14,9 @@ struct config {
     struct tree *file_extensions_tree;
     uint8_t only_user_extensions:1;
 
+    /* exclusions */
+    struct tree *dir_exclusion_tree;
+
     /* search parser type */
     uint8_t insensitive_search:1;
     uint8_t regex_search:1;
