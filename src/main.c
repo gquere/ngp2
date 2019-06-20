@@ -23,10 +23,13 @@ static void usage(void)
     printf(" -r : raw search, ignores extensions restrictions\n");
     printf(" -f : follow symlinks\n");
     printf(" -o <ext> : only look in files withs this extension\n");
-    printf(" -t <ext> : add extension to default extension list\n\n");
+    printf(" -t <ext> : add extension to default extension list\n");
+    printf(" -x <dirname> : exclude directories\n");
+    printf("\n");
     printf("subsearch options (use when inside ngp):\n");
     printf("/ : search results for this new pattern\n");
     printf("\\ : exclude this pattern from the results\n");
+    printf("p : dump current search results in ngp.out\n");
 }
 
 
