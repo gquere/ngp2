@@ -399,16 +399,13 @@ static void goto_end(struct display *this, const struct entries *entries)
 /* SUBSEARCH ******************************************************************/
 /**
  * Pops a new window for the user to write a new pattern to look for.
- * Warning: caller is responsible for freeing returned pattern.
- *
- * @return  New pattern
  */
-static char * subsearch_window(const uint8_t invert)
+static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 {
 	WINDOW	*searchw;
 	int	j = 0, car;
 
-    char *search = calloc(4096, sizeof(char));
+    char *search = user_param->pattern;
 
 	searchw = newwin(3, 50, ((LINES - 1)-3)/2 , (COLS-50)/2);
 	box(searchw, 0,0);
@@ -422,7 +419,7 @@ static char * subsearch_window(const uint8_t invert)
     char *text = NULL;
     char *format = NULL;
 
-    if (invert) {
+    if (user_param->invert_search) {
         text = exclude;
         format = exclude_format;
     } else {
@@ -432,6 +429,17 @@ static char * subsearch_window(const uint8_t invert)
     mvwprintw(searchw, 1, 1, text, NULL);
 
 	while ((car = wgetch(searchw)) != '\n' && j < 4096) {
+
+        if (car == KEY_DOWN) {
+            //user_param->regex_search = 1;
+            continue;
+        }
+
+        if (car == KEY_UP) {
+            //user_param->regex_search = 0;
+            continue;
+        }
+
 		if (car == 8 || car == 127) { //backspace
 			if (j > 0)
 				search[--j] = 0;
@@ -440,24 +448,23 @@ static char * subsearch_window(const uint8_t invert)
 		}
 
 		if (car == 27) { //escape
-            free(search);
             delwin(searchw);
-            return NULL;
+            return EXIT_FAILURE;
 		}
 
 		search[j++] = car;
 		mvwprintw(searchw, 1, 1, format, search);
 	}
+
 	search[j] = 0;
 	delwin(searchw);
     ncurses_clear_screen();
 
     if (j <= 0) {
-        free(search);
-        return NULL;
+        return EXIT_FAILURE;
     }
 
-    return search;
+    return EXIT_SUCCESS;
 }
 
 
@@ -539,38 +546,43 @@ void display_loop(struct display *this, const struct search *main_search)
             ncurses_init();
             break;
 
-        /* subsearch include */
+        /* subsearch, include user pattern */
         case '/': {
-            char *sub_pattern = subsearch_window(0);
-            if (sub_pattern == NULL) {
+            struct subsearch_user_params user_params = {0};
+
+            uint8_t result = subsearch_window(&user_params);
+            if (result == EXIT_FAILURE) {
                 ncurses_clear_screen();
                 break;
             }
-            struct search *subsearch = subsearch_new(current_search, sub_pattern, 0);
+
+            struct search *subsearch = subsearch_new(current_search, &user_params);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
-            struct display *subdisplay = display_new(this, sub_pattern);
-            free(sub_pattern);
+            struct display *subdisplay = display_new(this, user_params.pattern);
             this = subdisplay;
 
             ncurses_clear_screen();
             break;
         }
 
-        /* subsearch exclude */
+        /* subsearch, exclude user pattern */
         case '\\': {    //TODO: clean this up
-            char *sub_pattern = subsearch_window(1);
-            if (sub_pattern == NULL) {
+            struct subsearch_user_params user_params = {0};
+            user_params.invert_search = 1;
+
+            uint8_t result = subsearch_window(&user_params);
+            if (result == EXIT_FAILURE) {
                 ncurses_clear_screen();
                 break;
             }
-            struct search *subsearch = subsearch_new(current_search, sub_pattern, 1);
+
+            struct search *subsearch = subsearch_new(current_search, &user_params);
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
-            struct display *subdisplay = display_new(this, sub_pattern);
-            free(sub_pattern);
+            struct display *subdisplay = display_new(this, user_params.pattern);
             this = subdisplay;
 
             ncurses_clear_screen();
