@@ -413,21 +413,16 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 	searchw = newwin(3, 50, ((LINES - 1)-3)/2 , (COLS-50)/2);
 	box(searchw, 0,0);
 
-    char *include = "To include: ";
-    char *exclude = "To exclude: ";
     char *include_format = "To include: %s ";
     char *exclude_format = "To exclude: %s ";
-    char *text = NULL;
     char *format = NULL;
 
     if (user_param->invert_search) {
-        text = exclude;
         format = exclude_format;
     } else {
-        text = include;
         format = include_format;
     }
-    mvwprintw(searchw, 1, 1, text, NULL);
+    mvwprintw(searchw, 1, 1, format, "");
 
 	while ((car = wgetch(searchw)) != '\n' && j < 4096) {
 
