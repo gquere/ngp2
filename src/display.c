@@ -15,8 +15,11 @@
 #include "subsearch.h"
 
 
-#define QUIT    'q'
-#define ENTER   '\n'
+#define QUIT        'q'
+#define ENTER       '\n'
+#define ESCAPE      27
+#define BACKSPACE   8
+#define SUPPR       127
 
 
 /* ncurse colors */
@@ -402,15 +405,13 @@ static void goto_end(struct display *this, const struct entries *entries)
  */
 static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 {
-	WINDOW	*searchw;
+	WINDOW *searchw;
 	int	j = 0, car;
 
     char *search = user_param->pattern;
 
 	searchw = newwin(3, 50, ((LINES - 1)-3)/2 , (COLS-50)/2);
 	box(searchw, 0,0);
-	wrefresh(searchw);
-	refresh();
 
     char *include = "To include: ";
     char *exclude = "To exclude: ";
@@ -430,26 +431,41 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 
 	while ((car = wgetch(searchw)) != '\n' && j < 4096) {
 
-        if (car == KEY_DOWN) {
-            //user_param->regex_search = 1;
-            continue;
-        }
+		if (car == ESCAPE) {
 
-        if (car == KEY_UP) {
-            //user_param->regex_search = 0;
-            continue;
-        }
+            nodelay(searchw, TRUE);
+            car = wgetch(searchw);
 
-		if (car == 8 || car == 127) { //backspace
+            /* no char received after means ESCAPE key */
+            if (car == ERR) {
+                delwin(searchw);
+                return EXIT_FAILURE;
+            }
+
+            /* extended keycodes */
+            if (car == 91) {
+                car = wgetch(searchw);
+
+                /* up key */
+                if (car == 65) {
+                    user_param->regex_search = 0;
+                }
+
+                /* down key */
+                if (car == 66) {
+                    user_param->regex_search = 1;
+                }
+            }
+
+            nodelay(searchw, FALSE);
+            continue;
+		}
+
+		if (car == BACKSPACE || car == SUPPR) {
 			if (j > 0)
 				search[--j] = 0;
 			mvwprintw(searchw, 1, 1, format, search);
 			continue;
-		}
-
-		if (car == 27) { //escape
-            delwin(searchw);
-            return EXIT_FAILURE;
 		}
 
 		search[j++] = car;
@@ -458,7 +474,6 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 
 	search[j] = 0;
 	delwin(searchw);
-    ncurses_clear_screen();
 
     if (j <= 0) {
         return EXIT_FAILURE;
