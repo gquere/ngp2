@@ -555,11 +555,17 @@ void display_loop(struct display *this, const struct search *main_search)
             break;
         }
 
-        case ENTER:
+        case ENTER: {
+            uint32_t entry_index = this->index + this->cursor;
+            if (entry_index == 0) {
+                break;
+            }
+
             ncurses_stop();
-            open_entry(entries, this->index + this->cursor);
+            open_entry(entries, entry_index);
             ncurses_init();
             break;
+        }
 
         /* subsearch, include user pattern */
         case '/': {
