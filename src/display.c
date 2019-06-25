@@ -400,18 +400,38 @@ static void goto_end(struct display *this, const struct entries *entries)
 
 
 /* SUBSEARCH ******************************************************************/
+static void print_mode_window(WINDOW *modew,
+                              const struct subsearch_user_params *user_param)
+{
+    if (user_param->regex_search == 0) {
+        wattron(modew, A_REVERSE);
+    }
+    mvwprintw(modew, 1, 1, "%s", "string");
+    wattroff(modew, A_REVERSE);
+    if (user_param->regex_search == 1) {
+        wattron(modew, A_REVERSE);
+    }
+    mvwprintw(modew, 2, 1, "%s", "regex");
+    wattroff(modew, A_REVERSE);
+
+    wrefresh(modew);
+}
+
 /**
  * Pops a new window for the user to write a new pattern to look for.
  */
 static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 {
-	WINDOW *searchw;
 	int	j = 0, car;
 
     char *search = user_param->pattern;
 
-	searchw = newwin(3, 50, ((LINES - 1)-3)/2 , (COLS-50)/2);
-	box(searchw, 0,0);
+    WINDOW *modew = newwin(4, 8, ((LINES - 1)-3)/2 , (COLS-50)/2 - 7);
+	box(modew, 0, 0);
+    print_mode_window(modew, user_param);
+
+	WINDOW *searchw = newwin(3, 50, ((LINES - 1)-3)/2 , (COLS-50)/2);
+	box(searchw, 0, 0);
 
     char *include_format = "To include: %s ";
     char *exclude_format = "To exclude: %s ";
@@ -434,6 +454,7 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
             /* no char received after means ESCAPE key */
             if (car == ERR) {
                 delwin(searchw);
+	            delwin(modew);
                 return EXIT_FAILURE;
             }
 
@@ -450,6 +471,8 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
                 if (car == 66) {
                     user_param->regex_search = 1;
                 }
+
+                print_mode_window(modew, user_param);
             }
 
             nodelay(searchw, FALSE);
@@ -457,8 +480,9 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 		}
 
 		if (car == BACKSPACE || car == SUPPR) {
-			if (j > 0)
+			if (j > 0) {
 				search[--j] = 0;
+            }
 			mvwprintw(searchw, 1, 1, format, search);
 			continue;
 		}
@@ -469,6 +493,7 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 
 	search[j] = 0;
 	delwin(searchw);
+	delwin(modew);
 
     if (j <= 0) {
         return EXIT_FAILURE;
