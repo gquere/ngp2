@@ -493,7 +493,7 @@ void display_loop(struct display *this, const struct search *main_search)
     ncurses_init();
 
     while ((ch = getch()) && run) {
-        int sleep_time = 100000;
+        int sleep_time = 10000;
         switch(ch) {
 
         case KEY_NPAGE:
