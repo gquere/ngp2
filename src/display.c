@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include <locale.h>
 #include <ncurses.h>
 
 #include <signal.h>
@@ -48,6 +49,7 @@ extern struct search *current_search;
 /* NCURSES ENVIRONMENT ********************************************************/
 static void ncurses_init(void)
 {
+    setlocale(LC_ALL, "");
     initscr();
     cbreak();
     noecho();
@@ -146,25 +148,24 @@ static void colorize_regex_pattern(char *line_contents)
 
     char *ptr = line_contents;
 
-    while (ptr < line_contents + start) {
-        /* return if going offscreen  */
-        if (ptr - line_contents > COLS) {
-            return;
-        }
-        addch(*ptr);
-        ptr++;
+    if ((int)start > COLS) {
+        return;
     }
+
+    printw("%.*s", start, ptr);
+    ptr += start;
 
     attron(COLOR_PAIR(red));
 
-    while (ptr < line_contents + stop) {
-        /* return if part of pattern is off-screen */
-        if (ptr - line_contents > COLS) {
-            return;
-        }
-        addch(*ptr);
-        ptr++;
+    int max_print = 0;
+    if (stop > COLS) {
+        max_print = COLS - start;
+    } else {
+        max_print = stop - start;
     }
+
+    printw("%.*s", max_print, ptr);
+    ptr += start;
 
     attron(COLOR_PAIR(normal));
 }
@@ -195,11 +196,8 @@ static void colorize_normal_patterns(char *line_contents, const uint8_t visited)
             break;
         }
 
-        /* move by 1 char until pattern is reached */
-        while (ptr < pattern_position) {
-            addch(*ptr);
-            ptr++;
-        }
+        printw("%.*s", pattern_position - ptr, ptr);
+        ptr += pattern_position - ptr;
 
         /* print pattern then move ptr by pattern size */
         attron(COLOR_PAIR(red));
