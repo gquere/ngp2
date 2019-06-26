@@ -9,25 +9,15 @@
 
 
 /* UTILS **********************************************************************/
-char * strcpycat(char *destination, const char *source)
+static char * remove_dot(const char *string)
 {
-    size_t source_len = strlen(source);
-    size_t destination_len = 0;
-    char *new_destination = NULL;
+    int i = 0;
 
-    if (destination != NULL) {
-        destination_len = strlen(destination);
-        size_t new_destination_len = source_len + 1 + destination_len + 1;
-        new_destination = malloc(new_destination_len);
-        snprintf(new_destination, new_destination_len, "%s %s", destination, source);
-        free(destination);
-    } else {
-        size_t new_destination_len = source_len + 1;
-        new_destination = malloc(new_destination_len);
-        snprintf(new_destination, new_destination_len, "%s", source);
+    while (string[i] == '.') {
+        i++;
     }
 
-    return new_destination;
+    return (char *)&string[i];
 }
 
 
@@ -83,11 +73,11 @@ static uint8_t parse_arguments(struct config *this, int argc, char *argv[])
 
         case 'o':
             this->only_user_extensions = 1;
-            tree_add_string(this->file_extensions_tree, optarg);
+            tree_add_string(this->file_extensions_tree, remove_dot(optarg));
             break;
 
         case 't':
-            tree_add_string(this->file_extensions_tree, optarg);
+            tree_add_string(this->file_extensions_tree, remove_dot(optarg));
             break;
 
         case 'x':
