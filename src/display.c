@@ -408,6 +408,7 @@ static void print_mode_window(WINDOW *modew,
     }
     mvwprintw(modew, 1, 1, "%s", "string");
     wattroff(modew, A_REVERSE);
+
     if (user_param->regex_search == 1) {
         wattron(modew, A_REVERSE);
     }
@@ -561,6 +562,7 @@ void display_loop(struct display *this, const struct search *main_search)
             break;
         }
 
+        case ESCAPE:
         case QUIT: {
             struct search *parent_search = search_get_parent(current_search);
             if (parent_search) {
