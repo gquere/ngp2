@@ -201,7 +201,7 @@ static void colorize_normal_patterns(char *line_contents, const uint8_t visited)
 
         /* print pattern then move ptr by pattern size */
         attron(COLOR_PAIR(red));
-        printw("%s", pattern);
+        printw("%.*s", strlen(pattern), pattern_position);
         if (visited) {
             attron(COLOR_PAIR(magenta));
         } else {

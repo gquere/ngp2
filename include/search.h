@@ -20,7 +20,7 @@ struct search {
     /* search parameters */
     char *directory;
     char *pattern;
-    char * (*parser)(const char *, const char *, int);
+    char * (*parser)(const struct search *, const char *, int);
     struct tree *file_extensions_tree;
     struct tree *dir_exclusion_tree;
     regex_t *regex;

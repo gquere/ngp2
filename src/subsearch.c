@@ -11,7 +11,7 @@
 /* UTILS **********************************************************************/
 uint8_t matches(const struct search *this, char *data)
 {
-    int res = (this->parser(data, this->pattern, 0) != NULL);
+    int res = (this->parser(this, data, 0) != NULL);
 
     return res ^ this->invert_search;
 }

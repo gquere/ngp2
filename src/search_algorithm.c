@@ -13,19 +13,20 @@ extern struct search *current_search;
 
 
 /* NORMAL SEARCH ALGORITHMS ***************************************************/
-char * search_algorithm_normal_search(const char *line, const char *pattern,
-                                      int size)
+char * search_algorithm_normal_search(const struct search *this,
+                                      const char *line, const int size)
 {
     (void) size;
 
-    return strstr(line, pattern);
+    return strstr(line, this->pattern);
 }
 
-char * search_algorithm_insensitive_search(const char *line, const char *pattern, int size)
+char * search_algorithm_insensitive_search(const struct search *this,
+                                           const char *line, const int size)
 {
     (void) size;
 
-    return strcasestr(line, pattern);
+    return strcasestr(line, this->pattern);
 }
 
 
@@ -66,8 +67,8 @@ void search_algorithm_pre_rabin_karp(const char *pattern)
  * @param pattern   Needle
  * @return          pointer to match or NULL
  */
-char * search_algorithm_rabin_karp(const char *text,
-                                   const char *pattern, int text_size)
+char * search_algorithm_rabin_karp(const struct search *this,
+                                   const char *text, const int text_size)
 {
     int ht;
     int i;
@@ -78,7 +79,7 @@ char * search_algorithm_rabin_karp(const char *text,
 
     for (i = 0; i <= text_size - psize; i++) {
         if (ht == hp) /* got a hash match, but it could be a collision */
-            if (!memcmp(pattern, text + i, psize))
+            if (!memcmp(this->pattern, text + i, psize))
                 return (char *) text + i;
         /* compute rolling hash for next position */
         ht = REHASH(text[i], text[i + psize], ht);
@@ -122,15 +123,15 @@ void search_algorithm_pre_bmh(const char *pattern)
  * - Checks last, first character of pattern
  * - skips if unicode text
  */
-char * search_algorithm_bmh(const char *text,
-                            const char *pattern, int tsize)
+char * search_algorithm_bmh(const struct search *this,
+                            const char *text, const int tsize)
 {
     int i = 0;
 
     while (i <= tsize - psize) {
 
-        if (text[i + psize - 1] == pattern[psize - 1] && text[i] == pattern[0]) {
-            if (!memcmp(text + i + 1, pattern + 1, psize - 2)) {
+        if (text[i + psize - 1] == this->pattern[psize - 1] && text[i] == this->pattern[0]) {
+            if (!memcmp(text + i + 1, this->pattern + 1, psize - 2)) {
                 return (char *) text + i;
             }
         }
@@ -158,13 +159,12 @@ regex_t * search_algorithm_compile_regex(const char *pattern)
     return reg;
 }
 
-char * search_algorithm_regex_search(const char *line,
-                                     const char *pattern, int size)
+char * search_algorithm_regex_search(const struct search *this,
+                                     const char *line, const int size)
 {
     (void) size;
-    (void) pattern;
 
-    int ret = regexec(search_get_regex(current_search), line, 0, NULL, 0);
+    int ret = regexec(this->regex, line, 0, NULL, 0);
 
     if (ret != REG_NOMATCH) {
         return "1";

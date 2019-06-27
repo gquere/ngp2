@@ -38,7 +38,7 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
     while ((endline = memchr(p, '\n', remaining_size))) {
         *endline = '\0';
 
-        if (this->parser(p, this->pattern, endline - p) != NULL) {
+        if (this->parser(this, p, endline - p) != NULL) {
 
             if (first) {
                 /* add file */
@@ -69,7 +69,7 @@ static void parse_file_contents(struct search *this, const char *file, char *p,
         memcpy(buffer, p, remaining_size);
         buffer[remaining_size] = '\0';
 
-        if (this->parser(buffer, this->pattern, remaining_size) != NULL) {
+        if (this->parser(this, buffer, remaining_size) != NULL) {
             if (first) {
                 /* add file */
                 entries_add(this->entries, 0, file);
