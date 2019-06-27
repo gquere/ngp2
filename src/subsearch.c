@@ -30,25 +30,23 @@ static void subsearch_search(struct search *this)
     }
 
     uint32_t i = 0;
-    uint8_t first = 1;
-    uint32_t file_index = 0;
 
     for (i = this->parent_previous_nb_entries; i < parent_nb_entries; i++) {
         uint32_t parent_entries_line = entries_get_line(parent_entries, i);
 
         /* if it's a file, store its index in case there's a line match later */
         if (parent_entries_line == 0) {
-            first = 1;
-            file_index = i;
+            this->first_line_of_file = 1;
+            this->previous_file_index = i;
             continue;
         }
 
         char *parent_entry_data = entries_get_data(parent_entries, i);
         if (matches(this, parent_entry_data)) {
             /* check if file has been added yet */
-            if (first) {
-                entries_copy(this->entries, entries_get_entry(parent_entries, file_index));
-                first = 0;
+            if (this->first_line_of_file) {
+                entries_copy(this->entries, entries_get_entry(parent_entries, this->previous_file_index));
+                this->first_line_of_file = 0;
             }
 
             /* add line */

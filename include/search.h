@@ -33,6 +33,8 @@ struct search {
     struct search *parent;
     pthread_t subsearch_search_thread;
     uint32_t parent_previous_nb_entries;
+    uint8_t first_line_of_file;
+    uint32_t previous_file_index;
 };
 
 
