@@ -206,7 +206,13 @@ uint8_t search_get_status(const struct search *this)
 
 regex_t * search_get_regex(const struct search *this)
 {
-    return this->regex;
+    /* getting the pattern is tricky because search could exclude patterns */
+    const struct search *no_excl = this;
+    while (no_excl->invert_search) {
+        no_excl = search_get_parent(no_excl);
+    }
+
+    return no_excl->regex;
 }
 
 struct entries * search_get_entries(const struct search *this)
