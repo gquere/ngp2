@@ -241,9 +241,6 @@ void * search_thread_start(void *context)
 {
     struct search *this = context;
 
-    /* signal we're running */
-    this->status = 1;
-
     if (!this->follow_symlinks && file_utils_is_symlink(this->directory)) {
         return NULL;
     }
