@@ -83,7 +83,7 @@ struct search * subsearch_new(struct search *parent, const struct subsearch_user
         this->parser = search_algorithm_insensitive_search;
     }
 
-    if (user_params->search_type == search_type_nocase) {
+    if (user_params->search_type == search_type_regex) {
         this->regex_search = 1;
         this->regex = search_algorithm_compile_regex(this->pattern);
         this->parser = search_algorithm_regex_search;
