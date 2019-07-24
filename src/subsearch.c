@@ -76,10 +76,15 @@ struct search * subsearch_new(struct search *parent, const struct subsearch_user
     this->parent = parent;
     this->pattern = strdup(user_params->pattern);
     this->invert_search = user_params->invert_search;
-    this->regex_search = user_params->regex_search;
     this->parser = search_algorithm_normal_search;
 
-    if (this->regex_search) {
+    if (user_params->search_type == search_type_nocase) {
+        this->case_insensitive = 1;
+        this->parser = search_algorithm_insensitive_search;
+    }
+
+    if (user_params->search_type == search_type_nocase) {
+        this->regex_search = 1;
         this->regex = search_algorithm_compile_regex(this->pattern);
         this->parser = search_algorithm_regex_search;
     }

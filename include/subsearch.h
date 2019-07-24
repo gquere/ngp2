@@ -4,10 +4,16 @@
 #include "search.h"
 
 
+enum search_type {
+    search_type_string,
+    search_type_nocase,
+    search_type_regex
+};
+
 struct subsearch_user_params {
     char pattern[4096];
     uint8_t invert_search;
-    uint8_t regex_search;
+    uint8_t search_type;
 };
 
 
