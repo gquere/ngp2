@@ -299,6 +299,8 @@ struct search * search_new(const char *directory, const char *pattern,
 #endif /* _RK */
     }
 
+    this->status = 1;   // signal we're running
+
     return this;
 }
 

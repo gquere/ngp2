@@ -55,7 +55,6 @@ int main(int argc, char *argv[])
     current_search = search;
 
     pthread_t search_thread;
-    search->status = 1;     // signal we're running
     pthread_create(&search_thread, NULL, search_thread_start, (void *) search);
 
 #ifndef _PERFORMANCE_TEST
