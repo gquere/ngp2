@@ -12,7 +12,7 @@ static struct leaf * leaf_new(void)
 
 static struct leaf * add_to_leaf(struct leaf *this, const char letter)
 {
-    int index = letter;
+    uint8_t index = letter;
 
     if (this->leaves[index]) {
         return this->leaves[index];
@@ -46,7 +46,7 @@ uint8_t is_string_in_tree(const struct tree *this, const char *string)
     struct leaf *leaf = this->root;
 
     for (i = 0; i < strlen(string); i++) {
-        int index = string[i];
+        uint8_t index = string[i];
 
         leaf = leaf->leaves[index];
         if (!leaf) {
@@ -63,7 +63,7 @@ uint8_t is_string_in_tree_size(const struct tree *this, const char *string, cons
     struct leaf *leaf = this->root;
 
     for (i = 0; i < string_len; i++) {
-        leaf = leaf->leaves[(int)string[i]];
+        leaf = leaf->leaves[(uint8_t)string[i]];
         if (!leaf) {
             return 0;
         }
