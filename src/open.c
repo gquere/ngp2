@@ -29,7 +29,7 @@ static char * shell_sanitize_pattern(const char *pattern)
         orig_count++;
     }
 
-    char *sanitized_pattern = calloc(strlen(pattern) + escape_count * 3, sizeof(char));
+    char *sanitized_pattern = calloc(strlen(pattern) + escape_count * 3 + 1, sizeof(char));
 
     orig_count = 0;
     size_t sanitized_count = 0;
@@ -45,6 +45,8 @@ static char * shell_sanitize_pattern(const char *pattern)
         sanitized_count++;
         orig_count++;
     }
+
+    sanitized_pattern[sanitized_count] = 0;
 
     return sanitized_pattern;
 }
@@ -82,7 +84,7 @@ static char * regex_sanitize_pattern(const char *pattern)
         orig_count++;
     }
 
-    char *sanitized_pattern = calloc(strlen(pattern) + escape_count, sizeof(char));
+    char *sanitized_pattern = calloc(strlen(pattern) + escape_count + 1, sizeof(char));
 
     orig_count = 0;
     size_t sanitized_count = 0;
@@ -96,6 +98,8 @@ static char * regex_sanitize_pattern(const char *pattern)
         sanitized_count++;
         orig_count++;
     }
+
+    sanitized_pattern[sanitized_count] = 0;
 
     return sanitized_pattern;
 }
