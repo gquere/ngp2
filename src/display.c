@@ -405,21 +405,21 @@ static void print_mode_window(WINDOW *modew,
     if (user_param->search_type == search_type_string) {
         wattron(modew, A_REVERSE);
     }
-    mvwprintw(modew, 0, 0, "%s", "string");
+    mvwprintw(modew, 1, 1, "%s", "string");
     wattroff(modew, A_REVERSE);
 
     /* nocase string */
     if (user_param->search_type == search_type_nocase) {
         wattron(modew, A_REVERSE);
     }
-    mvwprintw(modew, 1, 0, "%s", "nocase");
+    mvwprintw(modew, 2, 1, "%s", "nocase");
     wattroff(modew, A_REVERSE);
 
     /* regex */
     if (user_param->search_type == search_type_regex) {
         wattron(modew, A_REVERSE);
     }
-    mvwprintw(modew, 2, 0, "%s", "regex");
+    mvwprintw(modew, 3, 1, "%s", "regex");
     wattroff(modew, A_REVERSE);
 
     wrefresh(modew);
@@ -434,7 +434,8 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 
     char *search = user_param->pattern;
 
-    WINDOW *modew = newwin(3, 7, ((LINES - 1)-3)/2 , (COLS-50)/2 - 7);
+    WINDOW *modew = newwin(5, 8, ((LINES - 1)-5)/2 , (COLS-50)/2 - 7);
+    box(modew, 0, 0);
     print_mode_window(modew, user_param);
 
 	WINDOW *searchw = newwin(3, 50, ((LINES - 1)-3)/2 , (COLS-50)/2);
