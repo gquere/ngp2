@@ -7,7 +7,7 @@ ncurses-grep
 ngp2 lets you browse results of a grep-like search in a Vim-like style and open them in your favourite editor (vim) at the right line.
 
 
-![yay](/capture.png)
+![yay](/demo.gif)
 
 
 Features
