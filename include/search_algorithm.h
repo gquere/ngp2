@@ -10,11 +10,6 @@ char * search_algorithm_normal_search(const struct search *this,
 char * search_algorithm_insensitive_search(const struct search *this,
                                            const char *line, const int size);
 
-/* RABIN-KARP STRING SEARCH ***************************************************/
-void search_algorithm_pre_rabin_karp(const char *pattern);
-char * search_algorithm_rabin_karp(const struct search *this,
-                                   const char *line, const int size);
-
 /* BOYER-MOORE-HORSPOOL *******************************************************/
 void search_algorithm_pre_bmh(const char *pattern);
 char * search_algorithm_bmh(const struct search *this,

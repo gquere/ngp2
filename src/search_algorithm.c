@@ -30,65 +30,6 @@ char * search_algorithm_insensitive_search(const struct search *this,
 }
 
 
-/* RABIN-KARP STRING SEARCH ***************************************************/
-/**
- * Rolling hash function used for this instance of Rabin-Karp
- */
-#define REHASH(a,b,h) ((((h) - (a) * d) << 1) + b)
-
-int d, hp; // Rabin-Karp parameters
-int psize; // pattern size used by RK
-
-
-/**
- * Compute Rabin-Karp parameters (shift d and hash(pattern))
- *
- * @param pattern   search pattern
- */
-void search_algorithm_pre_rabin_karp(const char *pattern)
-{
-    int i;
-
-    psize = strlen(pattern);
-
-    /* compute shift */
-    d = 1 << (psize - 1);
-
-    /* compute hash(pattern) */
-    for (hp = i = 0; i < psize; i++)
-        hp = (hp << 1) + pattern[i];
-}
-
-/**
- * Rabin-Karp algorithm: use a rolling hash over the text to fasten
- * the comparison computation
- *
- * @param text      Haystack
- * @param pattern   Needle
- * @return          pointer to match or NULL
- */
-char * search_algorithm_rabin_karp(const struct search *this,
-                                   const char *text, const int text_size)
-{
-    int ht;
-    int i;
-
-    /* compute hash(text) at position 0 */
-    for (ht = i = 0; i < psize; i++)
-        ht = (ht << 1) + text[i];
-
-    for (i = 0; i <= text_size - psize; i++) {
-        if (ht == hp) /* got a hash match, but it could be a collision */
-            if (!memcmp(this->pattern, text + i, psize))
-                return (char *) text + i;
-        /* compute rolling hash for next position */
-        ht = REHASH(text[i], text[i + psize], ht);
-    }
-
-    return NULL;
-}
-
-
 /* BOYER-MOORE-HORSPOOL *******************************************************/
 #define ASCII_ALPHABET  256
 unsigned long int skipt[ASCII_ALPHABET];

@@ -293,10 +293,6 @@ struct search * search_new(const char *directory, const char *pattern,
         search_algorithm_pre_bmh(this->pattern);
         this->parser = search_algorithm_bmh;
 #endif /* _BMH */
-#ifdef _RK
-        search_algorithm_pre_rabin_karp(this->pattern);
-        this->parser = search_algorithm_rabin_karp;
-#endif /* _RK */
     }
 
     this->status = 1;   // signal we're running
