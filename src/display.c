@@ -516,6 +516,18 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
 
 
 /* API ************************************************************************/
+static void resize(struct display *this)
+{
+    /* realign indexes with new vertical size so that the first entry
+       is always at the same place in the display */
+    uint32_t current_position = this->index + this->cursor;
+
+    this->display_vertical_size = LINES;
+    this->cursor = current_position % (this->display_vertical_size - 1);
+    this->index = current_position - this->cursor;
+    ncurses_clear_screen();
+}
+
 void display_loop(struct display *this, const struct search *main_search)
 {
     uint8_t run = 1;
@@ -561,14 +573,7 @@ void display_loop(struct display *this, const struct search *main_search)
             break;
 
         case KEY_RESIZE: {
-            /* realign indexes with new vertical size so that the first entry
-               is always at the same place in the display */
-            uint32_t current_position = this->index + this->cursor;
-
-            this->display_vertical_size = LINES;
-            this->cursor = current_position % (this->display_vertical_size - 1);
-            this->index = current_position - this->cursor;
-            ncurses_clear_screen();
+            resize(this);
             break;
         }
 
@@ -580,7 +585,11 @@ void display_loop(struct display *this, const struct search *main_search)
                 current_search = parent_search;
                 entries = search_get_entries(current_search);
                 this = this->parent_display;
-                ncurses_clear_screen();
+
+                /* force parent resize because child might have resized too
+                   and since we're reusing old indexes they might need to be
+                   realigned */
+                resize(this);
             } else {
                 run = 0;
             }
@@ -616,7 +625,6 @@ void display_loop(struct display *this, const struct search *main_search)
             struct display *subdisplay = display_new(this, user_params.pattern);
             this = subdisplay;
 
-            ncurses_clear_screen();
             break;
         }
 
