@@ -625,6 +625,7 @@ void display_loop(struct display *this, const struct search *main_search)
             struct display *subdisplay = display_new(this, user_params.pattern);
             this = subdisplay;
 
+            ncurses_clear_screen();
             break;
         }
 
