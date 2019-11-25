@@ -232,7 +232,13 @@ uint8_t search_get_invert(const struct search *this)
 
 uint8_t search_get_sensitive(const struct search *this)
 {
-    return this->case_insensitive;
+    /* ignore parent exclusions */
+    const struct search *no_excl = this;
+    while (no_excl->invert_search) {
+        no_excl = search_get_parent(no_excl);
+    }
+
+    return no_excl->case_insensitive;
 }
 
 
