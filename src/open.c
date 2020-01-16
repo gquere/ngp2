@@ -9,6 +9,11 @@
 
 extern struct search *current_search;
 
+enum {
+    slashes_only = 0,
+    all_chars = 1,
+};
+
 
 /* UTILS **********************************************************************/
 /**
@@ -55,11 +60,19 @@ static char * shell_sanitize_pattern(const char *pattern)
  * Check if a character has a litteral sense in vim's regex engine
  * and return 1 if so.
  */
-static uint8_t is_char_regex_char(char character)
+static uint8_t is_char_regex_char(const char character, const uint8_t chars_to_escape)
 {
-    char regex_chars[] = {'[', ']', '^', '$', '.', '/',};
+    if (chars_to_escape == slashes_only) {
+        if (character == '/') {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 
+    char regex_chars[] = {'[', ']', '^', '$', '.', '/',};
     uint8_t i;
+
     for (i = 0; i < sizeof(regex_chars); i++) {
         if (character == regex_chars[i]) {
             return 1;
@@ -72,13 +85,13 @@ static uint8_t is_char_regex_char(char character)
 /**
  * Escape all characters that have a meaning in vim regexes
  */
-static char * regex_sanitize_pattern(const char *pattern)
+static char * regex_sanitize_pattern(const char *pattern, uint8_t chars_to_escape)
 {
     size_t escape_count = 0;
     size_t orig_count = 0;
 
     while (orig_count < strlen(pattern)) {
-        if (is_char_regex_char(pattern[orig_count])) {
+        if (is_char_regex_char(pattern[orig_count], chars_to_escape)) {
             escape_count++;
         }
         orig_count++;
@@ -90,7 +103,7 @@ static char * regex_sanitize_pattern(const char *pattern)
     size_t sanitized_count = 0;
 
     while (orig_count < strlen(pattern) + escape_count) {
-        if (is_char_regex_char(pattern[orig_count])) {
+        if (is_char_regex_char(pattern[orig_count], chars_to_escape)) {
             sanitized_pattern[sanitized_count++] = '\\';
         }
 
@@ -118,11 +131,14 @@ void open_entry(const struct entries *entries, const uint32_t index)
     char *pattern = search_get_pattern(current_search);
     char *sanitized_pattern = NULL;
 
-    /* if the pattern is a regex, no need to regex escape it */
     if (search_get_regex(current_search)) {
-        sanitized_pattern = shell_sanitize_pattern(pattern);
+        /* regexsearch, only escape slashes since vim's '/' is its internal search */
+        char *regex_sanitized_pattern = regex_sanitize_pattern(pattern, slashes_only);
+        sanitized_pattern = shell_sanitize_pattern(regex_sanitized_pattern);
+        free(regex_sanitized_pattern);
     } else {
-        char *regex_sanitized_pattern = regex_sanitize_pattern(pattern);
+        /* stringsearch, need to escape all regex characters */
+        char *regex_sanitized_pattern = regex_sanitize_pattern(pattern, all_chars);
         sanitized_pattern = shell_sanitize_pattern(regex_sanitized_pattern);
         free(regex_sanitized_pattern);
     }
