@@ -27,11 +27,28 @@ Usage
 - use / for a subsearch to include new pattern
 - use \ for a subsearch to exclude new pattern
 
-Example:
+Examples
+--------
+
+### Find all occurrences of "int" in sources files under /usr/src
 ```
 ngp int /usr/src/
 ```
 
+### Find case insensitive string "passw" in all files recursively under ./data/
+```
+ngp -ri passw ./data/
+```
+
+### Find all occurrences of "test(" only in python files, recursively under parent
+```
+ngp -o .py 'test(' ..
+```
+
+### Find numbers using a regexp in the current dir, ignoring directory ./test/
+```
+ngp -re '[0-9]\+' -x test
+```
 
 Requirements
 ------------
@@ -44,8 +61,3 @@ Installation
 
 - make
 - make install
-
-
-History
--------
-ngp2 is a rewrite from the discontinued [ncurses-grep](https://github.com/gquere/ngp), aiming to be more stable process-wise and reliable search-wise.
