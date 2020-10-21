@@ -9,6 +9,7 @@
 #define ALLOC_SIZE  5000
 
 
+pthread_mutex_t entries_mutex;  /* mutex on entries because they are realloced */
 /* GETTERS ********************************************************************/
 uint8_t entries_is_file(const struct entries *this, const uint32_t index)
 {

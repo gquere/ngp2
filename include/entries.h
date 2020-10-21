@@ -20,7 +20,6 @@ struct entries {
 };
 
 
-pthread_mutex_t entries_mutex;  /* mutex on entries because they are realloced */
 
 
 /* GET ************************************************************************/

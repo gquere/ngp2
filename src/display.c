@@ -125,7 +125,8 @@ static void display_bar(struct display *this, const struct search *search, const
     snprintf(tmp, 256, "   %d %d%% %s", entries_get_nb_lines(entries), percent_completed, roll_char);
 
     /* fuuuuuuu-sion */
-    memcpy(buf + COLS - strlen(tmp), tmp, strlen(tmp));
+    memcpy(buf + COLS - strlen(tmp) - 1, tmp, strlen(tmp));
+    buf[COLS - 1] = 0;
 
     /* print status line */
     attron(COLOR_PAIR(normal));
@@ -452,7 +453,7 @@ static uint8_t subsearch_window(struct subsearch_user_params *user_param)
     }
     mvwprintw(searchw, 1, 1, format, "");
 
-	while ((car = wgetch(searchw)) != '\n' && j < 4096) {
+	while ((car = wgetch(searchw)) != '\n' && j < 4095) {
 
 		if (car == ESCAPE) {
 
@@ -584,7 +585,9 @@ void display_loop(struct display *this, const struct search *main_search)
                 subsearch_delete(current_search);
                 current_search = parent_search;
                 entries = search_get_entries(current_search);
+                struct display *subdisplay = this;
                 this = this->parent_display;
+                display_delete(subdisplay);
 
                 /* force parent resize because child might have resized too
                    and since we're reusing old indexes they might need to be
