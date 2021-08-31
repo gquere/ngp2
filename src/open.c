@@ -102,7 +102,7 @@ static char * regex_sanitize_pattern(const char *pattern, uint8_t chars_to_escap
     orig_count = 0;
     size_t sanitized_count = 0;
 
-    while (orig_count < strlen(pattern) + escape_count) {
+    while (orig_count < strlen(pattern)) {
         if (is_char_regex_char(pattern[orig_count], chars_to_escape)) {
             sanitized_pattern[sanitized_count++] = '\\';
         }
