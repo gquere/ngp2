@@ -62,7 +62,7 @@ void * subsearch_search_thread_start(void *context)
 
     while (!this->stop) {
         subsearch_search(this);
-        sleep(0.5);
+        usleep(50000);
     }
 
     return NULL;
