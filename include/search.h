@@ -27,6 +27,7 @@ struct search {
 
     /* storage */
     struct entries *entries;
+    char *buffer;
 
     /* subsearch */
     struct search *subsearch;

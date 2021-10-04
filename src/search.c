@@ -20,6 +20,7 @@
 #include "search_algorithm.h"
 #include "tree.h"
 
+#define BUFFER_SIZE (16777216)
 
 extern struct search *current_search;
 
@@ -108,19 +109,29 @@ static uint8_t lookup_file(struct search *this, const char *file)
         return EXIT_SUCCESS;
     }
 
-    char *p = mmap(0, sb.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, f, 0);
-    if (p == MAP_FAILED) {
-        failure_add(file, MMAP);
-        close(f);
-        return EXIT_FAILURE;
-    }
+    if (sb.st_size < BUFFER_SIZE) {
+        if (read(f, this->buffer, sb.st_size) != sb.st_size) {
+            failure_add(file, MMAP);
+            close(f);
+            return EXIT_FAILURE;
+        }
 
-    char *pp = p;
-    parse_file_contents(this, file, p, sb.st_size);
+        parse_file_contents(this, file, this->buffer, sb.st_size);
+    } else {
+        char *p = mmap(0, sb.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, f, 0);
+        if (p == MAP_FAILED) {
+            failure_add(file, MMAP);
+            close(f);
+            return EXIT_FAILURE;
+        }
 
-    if (munmap(pp, sb.st_size) < 0) {
-        close(f);
-        return EXIT_FAILURE;
+        char *pp = p;
+        parse_file_contents(this, file, p, sb.st_size);
+
+        if (munmap(pp, sb.st_size) < 0) {
+            close(f);
+            return EXIT_FAILURE;
+        }
     }
 
     close(f);
@@ -302,12 +313,14 @@ struct search * search_new(const char *directory, const char *pattern,
     }
 
     this->status = 1;   // signal we're running
+    this->buffer = malloc(BUFFER_SIZE);
 
     return this;
 }
 
 void search_delete(struct search *this)
 {
+    free(this->buffer);
     free(this->regex);
     free(this->pattern);
     free(this->directory);
