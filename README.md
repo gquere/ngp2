@@ -45,7 +45,7 @@ ngp -ri passw ./data/
 ngp -o .py 'test(' ..
 ```
 
-### Find numbers using a regexp in the current dir, ignoring directory ./test/
+### Find numbers using a regexp in the current dir, ignoring all directories named "test"
 ```
 ngp -re '[0-9]\+' -x test
 ```
