@@ -10,11 +10,13 @@
 
 
 pthread_mutex_t entries_mutex;  /* mutex on entries because they are realloced */
+
+
 /* GETTERS ********************************************************************/
 uint8_t entries_is_file(const struct entries *this, const uint32_t index)
 {
     pthread_mutex_lock(&entries_mutex);
-    uint8_t is_file = !this->entries[index].line;
+    uint8_t is_file = !this->entries[index]->line;
     pthread_mutex_unlock(&entries_mutex);
     return is_file;
 }
@@ -28,8 +30,8 @@ char * entries_find_file(const struct entries *this, const uint32_t index)
     }
 
     pthread_mutex_lock(&entries_mutex);
-    while (this->entries[--i].line != 0) {}
-    char *filename = this->entries[i].data;
+    while (this->entries[--i]->line != 0) {}
+    char *filename = this->entries[i]->data;
     pthread_mutex_unlock(&entries_mutex);
 
     return filename;
@@ -38,7 +40,7 @@ char * entries_find_file(const struct entries *this, const uint32_t index)
 uint32_t entries_get_line(const struct entries *this, const uint32_t index)
 {
     pthread_mutex_lock(&entries_mutex);
-    uint32_t entry_line = this->entries[index].line;
+    uint32_t entry_line = this->entries[index]->line;
     pthread_mutex_unlock(&entries_mutex);
 
     return entry_line;
@@ -46,8 +48,13 @@ uint32_t entries_get_line(const struct entries *this, const uint32_t index)
 
 char * entries_get_data(const struct entries *this, const uint32_t index)
 {
+    /* array bounds check */
+    if (index > this->nb_entries - 1 || this->nb_entries == 0) {
+        return NULL;
+    }
+
     pthread_mutex_lock(&entries_mutex);
-    char *entry_data = this->entries[index].data;
+    char *entry_data = this->entries[index]->data;
     pthread_mutex_unlock(&entries_mutex);
 
     return entry_data;
@@ -74,7 +81,7 @@ uint32_t entries_get_nb_entries(const struct entries *this)
 struct entry * entries_get_entry(const struct entries *this, const uint32_t index)
 {
     pthread_mutex_lock(&entries_mutex);
-    struct entry *entry = &this->entries[index];
+    struct entry *entry = this->entries[index];
     pthread_mutex_unlock(&entries_mutex);
 
     return entry;
@@ -83,14 +90,14 @@ struct entry * entries_get_entry(const struct entries *this, const uint32_t inde
 void entries_set_visited(const struct entries *this, const uint32_t index)
 {
     pthread_mutex_lock(&entries_mutex);
-    this->entries[index].visited = 1;
+    this->entries[index]->visited = 1;
     pthread_mutex_unlock(&entries_mutex);
 }
 
 uint8_t entries_get_visited(const struct entries *this, const uint32_t index)
 {
     pthread_mutex_lock(&entries_mutex);
-    uint8_t visited = this->entries[index].visited;
+    uint8_t visited = this->entries[index]->visited;
     pthread_mutex_unlock(&entries_mutex);
 
     return visited;
@@ -99,7 +106,7 @@ uint8_t entries_get_visited(const struct entries *this, const uint32_t index)
 void entries_toggle_visited(const struct entries *this, const uint32_t index)
 {
     pthread_mutex_lock(&entries_mutex);
-    this->entries[index].visited ^= 1;
+    this->entries[index]->visited ^= 1;
     pthread_mutex_unlock(&entries_mutex);
 }
 
@@ -128,14 +135,18 @@ void entries_add(struct entries *this, const uint32_t line, const char *data)
     /* check size of entries */
     check_alloc(this);
 
+    struct entry *entry = calloc(1, sizeof(struct entry));
+
     /* copy input string */
     size_t data_size = strlen(data);
     char *data_copy = malloc(data_size + 1);
     memcpy(data_copy, data, data_size);
     data_copy[data_size] = 0;
 
-    this->entries[this->nb_entries].line = line;
-    this->entries[this->nb_entries].data = data_copy;
+    entry->line = line;
+    entry->data = data_copy;
+
+    this->entries[this->nb_entries] = entry;
     this->nb_entries++;
     if (line != 0) {
         this->nb_lines++;
@@ -147,9 +158,7 @@ void entries_copy(struct entries *this, struct entry *copy)
     /* check size of entries */
     check_alloc(this);
 
-    this->entries[this->nb_entries].line = copy->line;
-    this->entries[this->nb_entries].data = copy->data;
-    this->entries[this->nb_entries].visited = copy->visited;
+    this->entries[this->nb_entries] = copy;
 
     this->nb_entries++;
     if (copy->line != 0) {
@@ -163,7 +172,7 @@ struct entries * entries_new(void)
 {
     struct entries *this = calloc(1, sizeof(struct entries));
 
-    this->entries = calloc(ALLOC_SIZE, sizeof(struct entry));
+    this->entries = calloc(ALLOC_SIZE, sizeof(void *));
     this->size = ALLOC_SIZE;
 
     return this;
@@ -179,7 +188,8 @@ void entries_delete(struct entries *this)
 {
     uint32_t i = 0;
     for (i = 0; i < this->nb_entries; i++) {
-        free(this->entries[i].data);
+        free(this->entries[i]->data);
+        free(this->entries[i]);
     }
 
     free(this->entries);

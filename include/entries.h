@@ -13,13 +13,11 @@ struct entry {
 };
 
 struct entries {
-    struct entry *entries;
-    uint32_t nb_entries;    /* number of entries filled */
+    struct entry **entries;
+    uint32_t nb_entries;    /* number of entries filled (lines and files) */
     uint32_t nb_lines;      /* number of lines in the entries (rest are files) */
-    uint32_t size;          /* actual number of entries to hold */
+    uint32_t size;          /* actual number of entries currently allocated */
 };
-
-
 
 
 /* GET ************************************************************************/
