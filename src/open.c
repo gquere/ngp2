@@ -151,12 +151,13 @@ void open_entry(const struct entries *entries, const uint32_t index)
         vim_cmdline = "vim '%s' -c '/%s' -c %d";
     }
 
-    char command[256] = {0};
     uint32_t line = entries_get_line(entries, index);
 
-    snprintf(command, sizeof(command), vim_cmdline,
-             file, sanitized_pattern, line);
+    size_t command_len = strlen(vim_cmdline) + strlen(file) + strlen(pattern) + 10;
+    char *command = calloc(1, command_len);
+    snprintf(command, command_len, vim_cmdline, file, sanitized_pattern, line);
     system(command);
+    free(command);
     entries_set_visited(entries, index);
 
     free(sanitized_pattern);
