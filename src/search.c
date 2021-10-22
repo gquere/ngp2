@@ -169,6 +169,32 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
         memcpy(&dir_entry_path[base_directory_name_len], directory_name, directory_name_len);
         dir_entry_path[base_directory_name_len + directory_name_len] = 0;
 
+        /* FIXME: do something cleaner? */
+        /* FIXME: breaks symlinks */
+        /* readdir(3) does not work on all filesystems, so use stat(2) if we know that readdir
+           failed and overwrite its structure so that the following logic remains the same */
+        if (dir_entry->d_type == DT_UNKNOWN) {
+            int f = open(dir_entry_path, O_RDONLY);
+            if (f == -1) {
+                return EXIT_FAILURE;
+            }
+
+            struct stat sb;
+            if (fstat(f, &sb) < 0) {
+                failure_add(dir_entry_path, STAT);
+                close(f);
+                return EXIT_FAILURE;
+            }
+
+            if (sb.st_mode & S_IFDIR) {
+                dir_entry->d_type = DT_DIR;
+            }
+
+            if (sb.st_mode & S_IFREG) {
+                dir_entry->d_type = DT_REG;
+            }
+        }
+
         if (dir_entry->d_type == DT_REG) {              // regular file
             lookup_file(this, dir_entry_path);
         } else if (dir_entry->d_type == DT_DIR) {       // folder
