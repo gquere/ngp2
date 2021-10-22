@@ -193,6 +193,8 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
             if (sb.st_mode & S_IFREG) {
                 dir_entry->d_type = DT_REG;
             }
+
+            close(f);
         }
 
         if (dir_entry->d_type == DT_REG) {              // regular file
@@ -204,7 +206,7 @@ static uint32_t lookup_directory(struct search *this, const char *directory)
             }
             lookup_directory(this, dir_entry_path);
         } else if (dir_entry->d_type&DT_LNK) {          // symlink
-            /* default : ignore symlinks */
+            /* default: ignore symlinks */
             if (this->follow_symlinks) {
                 lookup_file(this, dir_entry_path);
             }
