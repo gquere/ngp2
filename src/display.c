@@ -153,7 +153,7 @@ static void colorize_regex_pattern(char *line_contents)
         return;
     }
 
-    printw("%.*s", start, ptr);
+    printw("%.*s", (int)start, ptr);
     ptr += start;
 
     attron(COLOR_PAIR(red));
@@ -197,12 +197,12 @@ static void colorize_normal_patterns(char *line_contents, const uint8_t visited)
             break;
         }
 
-        printw("%.*s", pattern_position - ptr, ptr);
+        printw("%.*s", (int)(pattern_position - ptr), ptr);
         ptr += pattern_position - ptr;
 
         /* print pattern then move ptr by pattern size */
         attron(COLOR_PAIR(red));
-        printw("%.*s", strlen(pattern), pattern_position);
+        printw("%.*s", (int)strlen(pattern), pattern_position);
         if (visited) {
             attron(COLOR_PAIR(magenta));
         } else {
@@ -231,7 +231,7 @@ static void print_line_contents(const uint32_t y_position,
     } else {
         attron(COLOR_PAIR(normal));
     }
-    mvprintw(y_position, line_str_len, "%.*s", COLS - line_str_len, line_contents);
+    mvprintw(y_position, line_str_len, "%.*s", (int)(COLS - line_str_len), line_contents);
     move(y_position, line_str_len); // reset cursor to beginning of line
 
     /* next, overwrite patterns on the line */
