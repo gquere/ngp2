@@ -39,15 +39,15 @@ static char * shell_sanitize_pattern(const char *pattern)
     orig_count = 0;
     size_t sanitized_count = 0;
 
-    while (orig_count < strlen(pattern) + escape_count * 3) {
+    while (orig_count < strlen(pattern)) {
         if (pattern[orig_count] == '\'') {
             sanitized_pattern[sanitized_count++] = '\'';
             sanitized_pattern[sanitized_count++] = '\\';
             sanitized_pattern[sanitized_count++] = '\'';
+            sanitized_pattern[sanitized_count++] = '\'';
+        } else {
+            sanitized_pattern[sanitized_count++] = pattern[orig_count];
         }
-
-        sanitized_pattern[sanitized_count] = pattern[orig_count];
-        sanitized_count++;
         orig_count++;
     }
 
