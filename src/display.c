@@ -622,6 +622,10 @@ void display_loop(struct display *this, const struct search *main_search)
             }
 
             struct search *subsearch = subsearch_new(current_search, &user_params);
+            if (subsearch == NULL) {
+                ncurses_clear_screen();
+                break;
+            }
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
@@ -644,6 +648,10 @@ void display_loop(struct display *this, const struct search *main_search)
             }
 
             struct search *subsearch = subsearch_new(current_search, &user_params);
+            if (subsearch == NULL) {
+                ncurses_clear_screen();
+                break;
+            }
             current_search = subsearch;
             entries = search_get_entries(current_search);
 
