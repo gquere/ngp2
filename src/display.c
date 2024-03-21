@@ -319,8 +319,10 @@ static void page_down(struct display *this, const struct entries *entries)
 
 static void page_up(struct display *this, const struct entries *entries)
 {
-    if (this->index == 0) {
+    if (this->index == 0 && entries->nb_entries) {
         this->cursor = 1;
+        return;
+    } else if (this->index == 0) {
         return;
     }
 
