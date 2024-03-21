@@ -42,9 +42,14 @@ static uint8_t parse_config(struct config *this)
     tree_add_string(this->file_extensions_tree, "cpp");
     tree_add_string(this->file_extensions_tree, "py");
     tree_add_string(this->file_extensions_tree, "pl");
+    tree_add_string(this->file_extensions_tree, "pm");
+    tree_add_string(this->file_extensions_tree, "ksh");
     tree_add_string(this->file_extensions_tree, "sh");
     tree_add_string(this->file_extensions_tree, "php");
     tree_add_string(this->file_extensions_tree, "java");
+    tree_add_string(this->file_extensions_tree, "jsp");
+    tree_add_string(this->file_extensions_tree, "kt");
+    tree_add_string(this->file_extensions_tree, "R");
 
     return EXIT_SUCCESS;
 }
